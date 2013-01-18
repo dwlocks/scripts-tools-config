@@ -1,0 +1,11 @@
+[user]
+	email = danlocks@gmail.com
+	name = Dan Locks
+[github]
+	user = dwlocks
+[core]
+	editor = vim
+[color]
+	ui = true
+[help]
+	autocorrect = 1

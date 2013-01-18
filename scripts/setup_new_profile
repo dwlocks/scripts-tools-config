@@ -1,0 +1,77 @@
+#!/bin/bash
+# This set fixes up the profile.  Run for each user!
+# Startup items to remove from gnome-session (gnome-session-properties):
+startup_items=( at-spi-dbus-bus.desktop
+caribou-autostart.desktop
+gnome-sound-applet.desktop
+imsettings-start.desktop
+libcanberra-login-sound.desktop
+nautilus-autostart.desktop
+spice-vdagent.desktop
+user-dirs-update-gtk.desktop
+)
+
+a_s_dir=~/.config/autostart
+# Create a local autostart dir
+[ -d $a_s_dir ] || mkdir -p $a_s_dir
+# Edit items to override from system autostart while copying
+for item in ${startup_items[@]}; do
+    [ -f /etc/xdg/autostart/$item ] && \
+         sed -e '
+             /X-GNOME-Autostart-enabled/ {
+                s/true/false/I
+                # Tuck into hold buffer
+                h
+            }
+            $ {
+                x
+                # If the hold buffer was empty, then we didnt match
+                /^$/ a\
+                X-GNOME-Autostart-enabled=false
+            }
+        ' < /etc/xdg/autostart/$item > $a_s_dir/$item
+done
+
+# Set up gnome-shell auto-move-windows:
+gsettings set org.gnome.shell.extensions.auto-move-windows application-list \
+    "['gnome-terminal.desktop:1','firefox.desktop:2','mozilla-thunderbird.desktop:3']"
+
+# Remove a couple icons
+gsettings set org.gnome.shell.extensions.icon-manager top-bar \
+    "['a11y', 'keyboard']"
+
+# Enable extensions: maximus axe-menu auto-move-windows icon-manager,
+#    pidgin-integration, alternate-tab
+ext_uuids="maximus@mathematical.coffee.gmail.com
+axemenu@wheezy
+alternate-tab@gnome-shell-extensions.gcampax.github.com
+auto-move-windows@gnome-shell-extensions.gcampax.github.com
+icon-manager@krajniak.info
+pidgin-conversation-integration@kagesenshi.org"
+for ext in $ext_uuids; do
+    gnome-shell-extension-tool -e "$ext"
+done
+
+# Set up syndaemon autostart
+
+# Install dotfiles (copy for screen and...)
+cd ~/dotfiles/home
+for f in *; do
+    # If it's a file, back that shit up.
+    # If it's a link already, leave it alone.
+    [ -h ~/.$f ] || ln -b -s ~/dotfiles/home/$f ~/.$f
+done
+
+
+# Install and update vim settings.
+
+cd ~/.vim
+if [ ! -d ~/.vim/.git ]; then
+    git clone git@github.com:dwlocks/dotvim.git ~/.vim
+    git submodule update --init
+    ln -s .vim/vimrc .vimrc
+    ln -s .vim/gvimrc .gvimrc
+else
+    git pull origin
+fi
+cd ..

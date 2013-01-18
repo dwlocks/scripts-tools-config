@@ -1,0 +1,2 @@
+dwlocks junior=NOPASSWD:        /usr/local/nc/ncsvc * vpn.zmanda.com -u dwlocks *
+dwlocks junior=NOPASSWD:        /usr/local/nc/ncsvc -K

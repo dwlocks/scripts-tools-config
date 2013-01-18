@@ -1,0 +1,259 @@
+#!/bin/bash
+# Set up a newly installed fedora machine.  Might work for centos/rhel as well.
+#set -x
+
+# Use /tmp/setup to avoid wearing out the flash drive
+setup=/tmp/setup
+mkdir $setup
+cd $setup
+
+go_or_die() {
+    echo "error: $@"
+    read -p "^c to quit, or Enter to continue."
+}
+
+
+# Check for software and helper scripts.
+repolist="$(yum -q repolist)"
+# Adds freetype patches repo
+case $repolist in
+    *infinality*) : ;;
+    *) rpm -Uvh "http://www.infinality.net/fedora/linux/infinality-repo-1.0-1.noarch.rpm"
+esac
+# for flash.
+case $repolist in
+    *[Aa]dobe*) : ;;
+    *) rpm -ivh "http://linuxdownload.adobe.com/adobe-release/adobe-release-x86_64-1.0-1.noarch.rpm"
+       rpm --import /etc/pki/rpm-gpg/RPM-GPG-KEY-adobe-linux
+    ;;
+esac
+
+# RPMFusion
+F_REL=$(awk '{ print $3; }'</etc/redhat-release)
+case $repolist in
+    *rpmfusion*) : ;;
+    *) rpm --import "http://rpmfusion.org/keys?action=AttachFile&do=get&target=RPM-GPG-KEY-rpmfusion-free-fedora-$F_REL" \
+                    "http://rpmfusion.org/keys?action=AttachFile&do=get&target=RPM-GPG-KEY-rpmfusion-nonfree-fedora-$F_REL"
+       rpm -ivh "http://download1.rpmfusion.org/free/fedora/rpmfusion-free-release-stable.noarch.rpm" \
+                "http://download1.rpmfusion.org/nonfree/fedora/rpmfusion-nonfree-release-stable.noarch.rpm"
+    ;;
+esac
+
+# Add packages here so I don't have to remember them. Do yum first so others
+# are faster
+yum_plugins=( yum-plugin-fastestmirror
+        yum-plugin-show-leaves
+        yum-utils
+)
+
+# Use this for yum to reduce output
+yum="yum -q -y --errorlevel=0 --rpmverbosity=error"
+
+rpm -qi ${yum_plugins[@]} &>/dev/null || \
+    ${yum} install "${yum_plugins[@]}" || \
+    go_or_die "Yum plugin install failed."
+
+ARCH=$(uname -m)
+system_pkgs=( subversion.$ARCH
+        git.$ARCH
+        vim-X11.$ARCH
+        vim-common.$ARCH
+        vim-filesystem.$ARCH
+        vim-enhanced.$ARCH
+        vim-minimal.$ARCH
+        source-highlight.$ARCH
+        screen.$ARCH
+        python-pip.noarch
+        rdesktop.$ARCH
+        patch.$ARCH
+        sysstat.$ARCH
+        wireshark.$ARCH
+        aircrack-ng.$ARCH
+        nmap.$ARCH
+        ncurses-term.$ARCH
+        rpm-build.$ARCH
+        )
+# ncui requires these.  it's 32bit :-(
+system_pkgs_i686=( glibc.i686 zlib.i686 )
+
+gui_pkgs=( flash-plugin.$ARCH
+        fontconfig-infinality.noarch
+        freetype-infinality.$ARCH
+        ctan-cm-lgc-roman-fonts.noarch
+        ctan-cm-lgc-sans-fonts.noarch
+        ctan-cm-lgc-typewriter-fonts.noarch
+        fonts-tweak-tool.noarch
+        google-droid-sans-fonts.noarch
+        pidgin.$ARCH
+        gnome-shell-extension-auto-move-windows.noarch
+        gnome-shell-extension-pidgin.$ARCH
+        gnome-shell-extension-user-theme.noarch
+        gnome-shell-extension-theme-selector.noarch
+        gnome-shell-extension-alternate-tab.noarch
+        gnome-shell-extension-icon-manager.noarch
+        gnome-tweak-tool.noarch
+        dconf-editor.$ARCH
+        thunderbird.$ARCH
+        )
+amanda_pkgs=( gcc.$ARCH
+        automake.noarch
+        autoconf.noarch
+        flex.$ARCH
+        glib2-devel.$ARCH
+        libcurl-devel.$ARCH
+        readline-devel.$ARCH
+        )
+
+# Find missing packages (Set theory in bash!)
+# Add arch suffix to make sure 32bit packages match.
+# http://www.catonmat.net/blog/set-operations-in-unix-shell/
+missing=( $(comm -23 \
+    <( printf "%s\n" ${system_pkgs[@]} ${system_pkgs_i686[@]} ${gui_pkgs[@]} ${amanda_pkgs[@]} | sort ) \
+    <( rpm -qa --queryformat "%{NAME}.%{ARCH}\n" | sort )\
+) )
+
+if [ "${#missing[@]}" -gt 0 ]; then
+    # Now we have to strip that pesky suffix again.
+    ${yum} install "${missing[@]%.$ARCH}" || \
+    go_or_die "Missing package installation failed. Missing = ${missing[@]}"
+fi
+
+# Packages I don't need or want.
+remove=( b43-fwcutter
+            b43-openfwwf
+            aic94xx-firmware
+            btrfs-progs
+            eekboard*
+            anaconda
+            fcoe-utils
+            *chewing*
+            *hangul*
+            *pinyin*
+            ar9170-firmware
+            iwl[1-5]*-firmware
+            ql2500-firmware
+            ivtv-firmware
+            ipw*-firmware
+            libertas-usb8388-firmware
+            zd1211-firmware
+            ibus*
+            im*
+            vino
+)
+remove_fonts=( cjkuni-uming-fonts
+            jomolhari-*
+            khmeros-*
+            lohit-*fonts
+            nhn-nanum*
+            paratype-*fonts
+            smc-*fonts*
+            thai-scalable*
+            wqy-*
+)
+
+# Just query rpm 'cause these arrays have globs to be expanded.
+bloat=( $(rpm -q --qf "%{NAME}\n" "${remove[@]}" "${remove_fonts[@]}" | grep -v "not installed") )
+if [ "${bloat[@]}" ]; then
+    ${yum} erase "${bloat[@]}" || \
+    go_or_die "Error erasing bloat: ${bloat[@]}"
+fi
+
+if rpm -qi laptop-mode-tools &>/dev/null ; then
+    :
+else
+    # Download, build and install laptop-mode-tools.  Maybe check for a new one?
+    mkdir rpmbuild
+    l_m_t=laptop-mode-tools
+    v=1.6.2
+    [ -f ./$l_m_t ] || wget "http://samwel.tk/laptop_mode/tools/downloads/${l_m_t}_${v}.tar.gz"
+    # Make sure not to build on flash-drive!
+    rpmbuild -tb ${l_m_t}_${v}.tar.gz --define "_topdir $PWD/rpmbuild" && \
+        ${yum} install $PWD/rpmbuild/RPMS/noarch/${l_m_t}-${v}*.rpm || \
+        go_or_die "laptop-mode-tools didn't seem to build."
+fi
+
+# Extensions downloaded individually don't have consistent enough naming to
+# easily factor into a nice function.
+extensions_dir=/usr/share/gnome-shell/extensions
+if [ ! -d $extensions_dir/axemenu@wheezy ]; then
+    wget -c -O $setup/axemenu-gnome-shell.tar.gz "http://k210.org/axemenu/last/" && \
+    tar -zxf $setup/axemenu-gnome-shell.tar.gz -C $extensions_dir/ || \
+    go_or_die "axmenu didn't install."
+fi
+maximus=maximus@mathematical.coffee.gmail.com
+if [ ! -d $extensions_dir/$maximus  ]; then
+    wget -c -O $setup/$maximus.zip https://bitbucket.org/mathematicalcoffee/maximus-gnome-shell-extension/downloads/gnome3.4_$maximus.zip && \
+    unzip -o -d $extensions_dir $setup/$maximus.zip || \
+    go_or_die "maximus extension didn't install."
+fi
+
+ncui="ncui-7.2R4.i386.rpm"
+if [ ! -d /usr/local/nc ]; then
+    # requires glibc.i686 and zlib.i686, should be installed above.
+    wget -c -O $setup/$ncui "http://www.tcnj.edu/~nts/downloads/NetworkConnect/$ncui" && \
+    rpm -i "$setup/$ncui" || \
+    go_or_die "NetworkConnect client didn't install."
+    cp /home/dwlocks/dotfiles/scripts/getx509certificate.sh /usr/local/nc/
+    # add some lines to sudoers
+    cat /home/dwlocks/dotfiles/etc/sudoers-zmanda-vpn
+    read -p "Does this look right? (ctrl-c to quit, Enter to continue)"
+    cp -f /home/dwlocks/dotfiles/etc/sudoers-zmanda-vpn /etc/sudoers.d/
+    chmod 0440 /etc/sudoers.d/sudoers-zmanda-vpn
+    visudo -c
+fi
+
+# pybugz 0.9.0 # how to search for this?  need a particular version
+#    (or update patch_submit.sh)
+pybugz=pybugz-0.9.0_rc1
+python -c "import bugz" || { \
+    [ -f ${pybugz}.tar.gz ] || wget "http://pybugz.googlecode.com/files/${pybugz}.tar.gz"
+    tar -zxf ${pybugz}.tar.gz
+    cd $pybugz || go_or_die "Couldn't enter pybugz dir!"
+    python setup.py install || go_or_die "pybugz install failed."
+    cd $setup
+}
+
+# Edit infinality-settings.sh. Yay pretty fonts!
+sed -i '/USE_STYLE=/ s/DEFAULT/INFINALITY/' /etc/profile.d/infinality-settings.sh
+/etc/fonts/infinality/infctl.sh makestyles
+/etc/fonts/infinality/infctl.sh setstyle infinality
+
+# Copy synaptics tweaks to /etc
+cp -f /home/dwlocks/dotfiles/etc/20-synaptics.conf /etc/X11/xorg.conf.d
+
+# Services I don't want running
+unused_services=( auditd
+    abrt-ccpp
+    abrt-xorg
+    avahi-daemon
+    colord-sane
+    fedora-storage-init-late
+    fedora-storage-init
+    fedora-wait-storage
+    lvm2-monitor
+    postfix
+    sendmail
+    spice-vdagentd
+    tcsd
+)
+
+# Disable in a loop, because failure messages are not clear
+for svc in ${unused_services[@]}; do
+    systemctl stop "${svc}.service"
+    systemctl disable --no-reload "${svc}.service"
+done
+systemctl daemon-reload
+
+
+
+# TODO:
+
+# root's bashrc: terminfo checks and graceful fallback for linux/solaris for terminfo:  screen-256color, xterm-256color, xterm-color, xterm, vt100
+
+# x86_energy_perf_policy(8)  ??
+# ACPI _OSC support notification failed, PCIe ASPM disabled ??
+#
+
+# Cleanup
+cd /
+rm -rf $setup

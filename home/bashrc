@@ -27,26 +27,25 @@ export LESS='-R'
 
 # Aliases go here.
 alias vim='gvim -v'
-alias scd='screen -D -RR'
+alias la='ls -a'
+alias lah='ls -lah'
+alias scd='screenkey -D -RR'
 alias rgrep="find . -name .svn -prune -o -name '*.pyc' -prune -o -name '*.swp' -prune -o -type f -print0 | xargs -0 grep --color "
 alias pip='pip-python'
 #[ -x /opt/CollabNet_Subversion/bin/svn_wrapper ] && alias svn=/opt/CollabNet_Subversion/bin/svn_wrapper
 # Zmanda svn urls
 amtrunk="http://svn.zmanda.com/amanda/trunk/"
 am="http://svn.zmanda.com/amanda/"
-sf="https://amanda.svn.sourceforge.net/svnroot/amanda/"
+sf="https://amanda.svn.sourceforge.net:443/svnroot/amanda/"
 comm="${sf}amanda/"
 commtrunk="${comm}trunk/"
 z="http://svn.zmanda.com"
 amlocal="file:///home/dwlocks/svn/amanda"
 bb="$z/tools/trunk/buildbot/"
-bpc="ssh://natasha/home/cvs/git/backuppc.git"
-zmui="$z/zmanda-ui/"
-zpkg="$z/packaging/"
 
 # This set of functions start new screens with nice titles...
 svim() {
-    screen -t $1 vim $1
+    screenkey -t $1 vim $1
 }
 
 go() {
@@ -55,5 +54,10 @@ go() {
 }
 
 sssh() {
-    screen -t $1 ssh $@
+    case $1 in
+        root@*) title=${1/root@/#};;
+        buildslave@*) title=${1/buildslave@/bs@};;
+        *) title=${1}
+    esac
+    screenkey -t $title ssh $@
 }

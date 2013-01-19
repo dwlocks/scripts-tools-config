@@ -1,6 +1,19 @@
 #!/bin/bash
 # Set up a newly installed fedora machine.  Might work for centos/rhel as well.
 #set -x
+[ x"$1" = x ] && \
+    read -p "desktop, or laptop? (default: laptop) " some_top || \
+    some_top=$1
+
+case $some_top in
+    [Dd]esk*) usage_type=desk;;
+    [Ll]ap*) usage_type=lap;;
+    "") usage_type=lap;;
+    *) echo "Input wasn't desktop or laptop."
+        exit 1
+    ;;
+esac
+
 
 # Use /tmp/setup to avoid wearing out the flash drive
 setup=/tmp/setup
@@ -23,7 +36,7 @@ esac
 # for flash.
 case $repolist in
     *[Aa]dobe*) : ;;
-    *) rpm -ivh "http://linuxdownload.adobe.com/adobe-release/adobe-release-x86_64-1.0-1.noarch.rpm"
+    *) rpm -Uvh "http://linuxdownload.adobe.com/adobe-release/adobe-release-x86_64-1.0-1.noarch.rpm"
        rpm --import /etc/pki/rpm-gpg/RPM-GPG-KEY-adobe-linux
     ;;
 esac
@@ -72,11 +85,12 @@ system_pkgs=( subversion.$ARCH
         nmap.$ARCH
         ncurses-term.$ARCH
         rpm-build.$ARCH
+        rfkill.$ARCH
         )
 # ncui requires these.  it's 32bit :-(
 system_pkgs_i686=( glibc.i686 zlib.i686 )
 
-gui_pkgs=( flash-plugin.$ARCH
+gui_pkgs=( flash-plugin.${ARCH/i686/i386}
         fontconfig-infinality.noarch
         freetype-infinality.$ARCH
         ctan-cm-lgc-roman-fonts.noarch
@@ -113,6 +127,7 @@ missing=( $(comm -23 \
 ) )
 
 if [ "${#missing[@]}" -gt 0 ]; then
+    echo "Installing missing packages: ${missing[@]}"
     # Now we have to strip that pesky suffix again.
     ${yum} install "${missing[@]%.$ARCH}" || \
     go_or_die "Missing package installation failed. Missing = ${missing[@]}"
@@ -153,14 +168,13 @@ remove_fonts=( cjkuni-uming-fonts
 
 # Just query rpm 'cause these arrays have globs to be expanded.
 bloat=( $(rpm -q --qf "%{NAME}\n" "${remove[@]}" "${remove_fonts[@]}" | grep -v "not installed") )
-if [ "${bloat[@]}" ]; then
+if [ "${#bloat[@]}" -gt 0 ]; then
+    echo "Erasing bloat: ${bloat[@]}"
     ${yum} erase "${bloat[@]}" || \
     go_or_die "Error erasing bloat: ${bloat[@]}"
 fi
 
-if rpm -qi laptop-mode-tools &>/dev/null ; then
-    :
-else
+if [ "$usage_type" == "lap" ] && ! rpm -qi laptop-mode-tools &>/dev/null ; then
     # Download, build and install laptop-mode-tools.  Maybe check for a new one?
     mkdir rpmbuild
     l_m_t=laptop-mode-tools
@@ -221,37 +235,81 @@ sed -i '/USE_STYLE=/ s/DEFAULT/INFINALITY/' /etc/profile.d/infinality-settings.s
 # Copy synaptics tweaks to /etc
 cp -f /home/dwlocks/dotfiles/etc/20-synaptics.conf /etc/X11/xorg.conf.d
 
-# Services I don't want running
-unused_services=( auditd
+disable_svcs() {
+    # Takes a list of services to disable
+    # Disable in a loop, because failure messages are not clear
+    for svc in $@; do
+        systemctl stop "${svc}"
+        systemctl disable --no-reload "${svc}"
+    done
+    # Reload at the end only.
+    systemctl daemon-reload
+}
+
+unused_services=( auditd.service
     abrt-ccpp
-    abrt-xorg
-    avahi-daemon
-    colord-sane
-    fedora-storage-init-late
-    fedora-storage-init
-    fedora-wait-storage
-    lvm2-monitor
-    postfix
-    sendmail
-    spice-vdagentd
-    tcsd
+    abrt-xorg.service
+    avahi-daemon.service
+    colord-sane.service
+    postfix.service
+    sendmail.service
+    spice-vdagentd.service
+    tcsd.service
+    cryptsetup.target
+)
+disable_svcs "${unused_services[@]}"
+
+storage_svc=( fedora-storage-init-late.service
+    fedora-storage-init.service
+    fedora-wait-storage.service
+    lvm2-monitor.service
+    mdmonitor.service
+    mdmonitor-takeover.service
+    dm-event.socket
 )
 
-# Disable in a loop, because failure messages are not clear
-for svc in ${unused_services[@]}; do
-    systemctl stop "${svc}.service"
-    systemctl disable --no-reload "${svc}.service"
+# For the storage service, make sure there are no disks that need these!
+has_md=false
+# Is this difinitive?
+for d in /dev/md*; do
+    [ -b $d ] && has_md=true
 done
-systemctl daemon-reload
 
+has_lvm=false
+# If dmraid returns something, we need lvm.
+dmraid -s -c -i && has_lvm=true
+# If lvs has some output, we need lvm.
+[ "$(lvs --noheadings 2>/dev/null)" ] && has_lvm=true
+
+# Now only add unused services to storage_svc_to_disable
+for svc in ${storage_svc[@]}; do
+    case $svc in
+        mdmon*) [ "$has_md" = "false" ] && \
+            storage_svc_to_disable=( ${storage_svc_to_disable[@]} $svc )
+            ;;
+        lvm*|dm*) [ "$has_lvm" = "false" ] && \
+            storage_svc_to_disable=( ${storage_svc_to_disable[@]} $svc )
+            ;;
+        # If neither md or lvm are in use...
+        fedora*) [ "$has_md" = "false" ] && [ "$has_lvm" = "false" ] && \
+            storage_svc_to_disable=( ${storage_svc_to_disable[@]} $svc )
+            ;;
+    esac
+done
+echo "Disabling: ${storage_svc_to_disable[@]}"
+read -p "ctrl-c to quit or Enter to disable"
+disable_svcs "${storage_svc_to_disable[@]}"
 
 
 # TODO:
 
-# root's bashrc: terminfo checks and graceful fallback for linux/solaris for terminfo:  screen-256color, xterm-256color, xterm-color, xterm, vt100
+# root's bashrc: terminfo checks and graceful fallback for linux/solaris
+# for terminfo:  screen-256color, xterm-256color, xterm-color, xterm, vt100
 
 # x86_energy_perf_policy(8)  ??
-# ACPI _OSC support notification failed, PCIe ASPM disabled ??
+
+# Check what "ACPI _OSC support notification failed" and
+# "PCIe ASPM disabled" mean.
 #
 
 # Cleanup

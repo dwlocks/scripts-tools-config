@@ -1,0 +1,13 @@
+Host github.com
+    Hostname github.com
+    ForwardAgent no
+    ForwardX11 no
+    ForwardX11Trusted no
+    User git
+
+Host *
+    ForwardAgent yes
+    ForwardX11 no
+    PubKeyAuthentication yes
+    StrictHostKeyChecking no
+

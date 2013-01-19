@@ -56,9 +56,11 @@ done
 
 # Install dotfiles (copy for screen and...)
 cd ~/dotfiles/home
-for f in *; do
+
+for f in $(find . -type f); do
     # If it's a file, back that shit up.
     # If it's a link already, leave it alone.
+    f=${f#./}
     [ -h ~/.$f ] || ln -b -s ~/dotfiles/home/$f ~/.$f
 done
 

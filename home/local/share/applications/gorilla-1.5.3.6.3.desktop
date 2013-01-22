@@ -1,0 +1,10 @@
+[Desktop Entry]
+Name=Password Gorilla 1.5363
+Comment=Password saver in TCL/GTK
+Exec=gorilla-1.5.3.6.3
+#Icon=/usr/share/icons/hicolor/48x48/apps/gdu-encrypted-lock.png
+Icon=/home/dwlocks/bin/gorilla/sources/pics/gorilla.ico
+#StartupNotify=true
+Terminal=false
+Type=Application
+Categories=Utility

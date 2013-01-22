@@ -64,7 +64,8 @@ for f in $(find . -type f); do
     [ -h ~/.$f ] || ln -b -s ~/dotfiles/home/$f ~/.$f
 done
 
-
+# Fix ssh perms
+chmod -R go-rwx ~/dotfiles/home/ssh
 # Install and update vim settings.
 
 cd ~/.vim

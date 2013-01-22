@@ -32,6 +32,18 @@ for item in ${startup_items[@]}; do
         ' < /etc/xdg/autostart/$item > $a_s_dir/$item
 done
 
+# clone gorilla password safe
+gor_dir=~/bin/gorilla
+[ -d ~/bin/gorilla ] || mkdir -p ~/bin/gorilla
+(
+    cd ~/bin/
+    [ -d gorilla/.git ] || git clone git://github.com/zdia/gorilla.git
+    cd gorilla && git checkout v1.5.3.6.3
+)
+ln -s ~/bin/gorilla/sources/gorilla.tcl ~/bin/gorilla-1.5.3.6.3
+mkdir -p ~/.local/share/applications
+cp ./home/local/share/applications/gorilla-1.5.3.6.3.desktop ~/.local/share/applications
+
 # Set up gnome-shell auto-move-windows:
 gsettings set org.gnome.shell.extensions.auto-move-windows application-list \
     "['gnome-terminal.desktop:1','firefox.desktop:2','mozilla-thunderbird.desktop:3']"

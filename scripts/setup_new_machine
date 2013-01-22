@@ -90,15 +90,15 @@ system_pkgs=( subversion.$ARCH
 # ncui requires these.  it's 32bit :-(
 system_pkgs_i686=( glibc.i686 zlib.i686 )
 
-gui_pkgs=( flash-plugin.${ARCH/i686/i386}
-        fontconfig-infinality.noarch
-        freetype-infinality.$ARCH
-        ctan-cm-lgc-roman-fonts.noarch
+gui_pkgs=( ctan-cm-lgc-roman-fonts.noarch
         ctan-cm-lgc-sans-fonts.noarch
         ctan-cm-lgc-typewriter-fonts.noarch
+        dconf-editor.$ARCH
+        flash-plugin.${ARCH/i686/i386}
         fonts-tweak-tool.noarch
+        fontconfig-infinality.noarch
+        freetype-infinality.$ARCH
         google-droid-sans-fonts.noarch
-        pidgin.$ARCH
         gnome-shell-extension-auto-move-windows.noarch
         gnome-shell-extension-pidgin.$ARCH
         gnome-shell-extension-user-theme.noarch
@@ -106,7 +106,12 @@ gui_pkgs=( flash-plugin.${ARCH/i686/i386}
         gnome-shell-extension-alternate-tab.noarch
         gnome-shell-extension-icon-manager.noarch
         gnome-tweak-tool.noarch
-        dconf-editor.$ARCH
+        itcl.$ARCH
+        libreoffice-base.$ARCH
+        libreoffice-core.$ARCH
+        libreoffice-calc.$ARCH
+        libreoffice-writer.$ARCH
+        pidgin.$ARCH
         thunderbird.$ARCH
         )
 amanda_pkgs=( gcc.$ARCH
@@ -241,6 +246,10 @@ disable_svcs() {
     for svc in $@; do
         systemctl stop "${svc}"
         systemctl disable --no-reload "${svc}"
+        wanted_by=$(find /usr/lib/systemd -wholename "*.wants/${svc}*")
+        if [ "$wanted_by" ]; then
+            echo "${svc} still wanted by ${wanted_by}"
+        fi
     done
     # Reload at the end only.
     systemctl daemon-reload
@@ -251,11 +260,14 @@ unused_services=( auditd.service
     abrt-xorg.service
     avahi-daemon.service
     colord-sane.service
+    cryptsetup.target
+    livesys.service
+    livesys-late.service
+    mcelog.service
     postfix.service
     sendmail.service
     spice-vdagentd.service
     tcsd.service
-    cryptsetup.target
 )
 disable_svcs "${unused_services[@]}"
 
@@ -265,6 +277,7 @@ storage_svc=( fedora-storage-init-late.service
     lvm2-monitor.service
     mdmonitor.service
     mdmonitor-takeover.service
+    multipathd.service
     dm-event.socket
 )
 

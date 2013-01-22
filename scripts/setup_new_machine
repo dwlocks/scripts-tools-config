@@ -112,6 +112,7 @@ gui_pkgs=( ctan-cm-lgc-roman-fonts.noarch
         libreoffice-calc.$ARCH
         libreoffice-writer.$ARCH
         pidgin.$ARCH
+        t1lib.$ARCH
         thunderbird.$ARCH
         )
 amanda_pkgs=( gcc.$ARCH
@@ -163,6 +164,7 @@ remove=( b43-fwcutter
 remove_fonts=( cjkuni-uming-fonts
             jomolhari-*
             khmeros-*
+            lklug*
             lohit-*fonts
             nhn-nanum*
             paratype-*fonts

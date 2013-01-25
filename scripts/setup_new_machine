@@ -188,6 +188,7 @@ remove_fonts=( cjkuni-uming-fonts
             sil-*fonts
             smc-*fonts*
             thai-scalable*
+            vlgothic*
             wqy-*
 )
 

@@ -40,9 +40,9 @@ gor_dir=~/bin/gorilla
     [ -d gorilla/.git ] || git clone git://github.com/zdia/gorilla.git
     cd gorilla && git checkout v1.5.3.6.3
 )
-ln -s ~/bin/gorilla/sources/gorilla.tcl ~/bin/gorilla-1.5.3.6.3
+ln -f -s ~/bin/gorilla/sources/gorilla.tcl ~/bin/gorilla-1.5.3.6.3
 mkdir -p ~/.local/share/applications
-cp ./home/local/share/applications/gorilla-1.5.3.6.3.desktop ~/.local/share/applications
+cp -f ./home/local/share/applications/gorilla-1.5.3.6.3.desktop ~/.local/share/applications
 
 # Set up gnome-shell auto-move-windows:
 gsettings set org.gnome.shell.extensions.auto-move-windows application-list \
@@ -61,7 +61,8 @@ auto-move-windows@gnome-shell-extensions.gcampax.github.com
 icon-manager@krajniak.info
 pidgin-conversation-integration@kagesenshi.org"
 for ext in $ext_uuids; do
-    gnome-shell-extension-tool -e "$ext"
+    # This tool complains loudly if the extensions are already enabled.
+    gnome-shell-extension-tool -e "$ext" 2>/dev/null
 done
 
 # Set up syndaemon autostart

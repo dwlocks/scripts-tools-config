@@ -23,35 +23,45 @@ set -e
 
 exists() { which "$1" &> /dev/null ; }
 
-if ! [ -d ~/.fonts ] ; then
-	exec 2>&1
-	echo 'There is no .fonts directory in your home.'
-	echo 'Is fontconfig set up for privately installed fonts?'
-	exit 1
+FONT_DIR=/usr/share/fonts/msft-fonts
+
+if [ -f $FONT_DIR/cambria.ttf ]; then
+    echo "Fonts already installed."
+    exit 0
 fi
+
+# Use sudo if we're not root.
+[ $UID == 0 ] && SUDO="" || SUDO=sudo
 
 # split up to keep the download command short
 DL_HOST=download.microsoft.com
 DL_PATH=download/f/5/a/f5a3df76-d856-4a61-a6bd-722f52a5be26
 ARCHIVE=PowerPointViewer.exe
 URL="http://$DL_HOST/$DL_PATH/$ARCHIVE"
+(
+    cd /tmp
+    if ! [ -e "$ARCHIVE" ] ; then
+        if   exists curl  ; then curl -O "$URL"
+        elif exists wget  ; then wget    "$URL"
+        elif exists fetch ; then fetch   "$URL"
+        fi
+    fi
 
-if ! [ -e "$ARCHIVE" ] ; then
-	if   exists curl  ; then curl -O "$URL"
-	elif exists wget  ; then wget    "$URL"
-	elif exists fetch ; then fetch   "$URL"
-	fi
-fi
+    TMPDIR=`mktemp -d`
+    # Neat cleanup trap :-)
+    trap 'rm -rf "$TMPDIR"' EXIT INT QUIT TERM
 
-TMPDIR=`mktemp -d`
-trap 'rm -rf "$TMPDIR"' EXIT INT QUIT TERM
+    cabextract -L -F ppviewer.cab -d "$TMPDIR" "$ARCHIVE"
 
-cabextract -L -F ppviewer.cab -d "$TMPDIR" "$ARCHIVE"
+    $SUDO mkdir -p $FONT_DIR
+    $SUDO cabextract -L -F '*.TT[FC]' -d $FONT_DIR "$TMPDIR/ppviewer.cab"
+)
 
-cabextract -L -F '*.TT[FC]' -d ~/.fonts "$TMPDIR/ppviewer.cab"
+MS_FONTS=$(echo calibri{,b,i,z}.ttf cambria{,b,i,z}.ttf candara{,b,i,z}.ttf consola{,b,i,z}.ttf constan{,b,i,z}.ttf corbel{,b,i,z}.ttf)
+(
+    cd $FONT_DIR
+    mv cambria.ttc cambria.ttf
+    chmod 600 $MS_FONTS
+)
 
-( cd ~/.fonts && mv cambria.ttc cambria.ttf && chmod 600 \
-	calibri{,b,i,z}.ttf cambria{,b,i,z}.ttf candara{,b,i,z}.ttf \
-	consola{,b,i,z}.ttf constan{,b,i,z}.ttf corbel{,b,i,z}.ttf )
-
-fc-cache -fv ~/.fonts
+$SUDO fc-cache -f -v -s $FONT_DIR

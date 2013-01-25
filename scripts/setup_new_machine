@@ -67,25 +67,26 @@ rpm -qi ${yum_plugins[@]} &>/dev/null || \
     go_or_die "Yum plugin install failed."
 
 ARCH=$(uname -m)
-system_pkgs=( subversion.$ARCH
+system_pkgs=( aircrack-ng.$ARCH
+        cabextract.$ARCH
         git.$ARCH
         vim-X11.$ARCH
         vim-common.$ARCH
         vim-filesystem.$ARCH
         vim-enhanced.$ARCH
         vim-minimal.$ARCH
-        source-highlight.$ARCH
-        screen.$ARCH
-        python-pip.noarch
+        ncurses-term.$ARCH
+        nmap.$ARCH
         rdesktop.$ARCH
+        rfkill.$ARCH
+        rpm-build.$ARCH
         patch.$ARCH
+        python-pip.noarch
+        screen.$ARCH
+        source-highlight.$ARCH
+        subversion.$ARCH
         sysstat.$ARCH
         wireshark.$ARCH
-        aircrack-ng.$ARCH
-        nmap.$ARCH
-        ncurses-term.$ARCH
-        rpm-build.$ARCH
-        rfkill.$ARCH
         )
 # ncui requires these.  it's 32bit :-(
 system_pkgs_i686=( glibc.i686 zlib.i686 )
@@ -168,14 +169,16 @@ remove_fonts=( cjkuni-uming-fonts
             lklug*
             lohit-*fonts
             nhn-nanum*
+            paktype-*-fonts
             paratype-*fonts
+            sil-*fonts
             smc-*fonts*
             thai-scalable*
             wqy-*
 )
 
 # Just query rpm 'cause these arrays have globs to be expanded.
-bloat=( $(rpm -q --qf "%{NAME}\n" "${remove[@]}" "${remove_fonts[@]}" | grep -v "not installed") )
+bloat=( $(rpm -qa --qf "%{NAME}\n" "${remove[@]}" "${remove_fonts[@]}" | grep -v "not installed") )
 if [ "${#bloat[@]}" -gt 0 ]; then
     echo "Erasing bloat: ${bloat[@]}"
     ${yum} erase "${bloat[@]}" || \
@@ -234,6 +237,8 @@ python -c "import bugz" || { \
     python setup.py install || go_or_die "pybugz install failed."
     cd $setup
 }
+
+# Download extract install MS fonts.
 
 # Edit infinality-settings.sh. Yay pretty fonts!
 sed -i '/USE_STYLE=/ s/DEFAULT/INFINALITY/' /etc/profile.d/infinality-settings.sh

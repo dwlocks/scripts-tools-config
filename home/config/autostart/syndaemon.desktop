@@ -1,0 +1,9 @@
+[Desktop Entry]
+Type=Application
+Exec=/usr/bin/syndaemon -i .33 -k
+Hidden=false
+X-GNOME-Autostart-enabled=true
+Name[en_US]=syndaemon
+Name=syndaemon
+Comment[en_US]=prevent mousing while typing
+Comment=prevent mousing while typing

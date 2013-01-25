@@ -65,6 +65,7 @@ for ext in $ext_uuids; do
 done
 
 # Set up syndaemon autostart
+cp ./home/config/autostart/syndaemon.desktop ~/.config/autostart
 
 # Install dotfiles (copy for screen and...)
 cd ~/dotfiles/home

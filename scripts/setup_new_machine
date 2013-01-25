@@ -98,6 +98,7 @@ gui_pkgs=( ctan-cm-lgc-roman-fonts.noarch
         fonts-tweak-tool.noarch
         fontconfig-infinality.noarch
         freetype-infinality.$ARCH
+        gecko-mediaplayer.$ARCH
         google-droid-sans-fonts.noarch
         gnome-shell-extension-auto-move-windows.noarch
         gnome-shell-extension-pidgin.$ARCH

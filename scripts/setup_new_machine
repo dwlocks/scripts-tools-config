@@ -14,7 +14,6 @@ case $some_top in
     ;;
 esac
 
-
 # Use /tmp/setup to avoid wearing out the flash drive
 setup=/tmp/setup
 mkdir $setup
@@ -141,6 +140,21 @@ if [ "${#missing[@]}" -gt 0 ]; then
     go_or_die "Missing package installation failed. Missing = ${missing[@]}"
 fi
 
+# Two extra font packages: microsoft and apple
+${yum} install "http://avi.alkalay.net/software/webcore-fonts/webcore-fonts-vista-3.0-1.noarch.rpm"
+if [ /tmp/macfonts.tar.gz ]; then
+    # Untar, update cache, be happy.
+    [ ! /usr/share/fonts/macfonts ] && \
+        tar -C /usr/share/fonts -zxf /tmp/macfonts.tar.gz && \
+        fc-cache -v -s
+else
+    echo "Check around these urls for macfonts.tar.gz:
+    http://www.webupd8.org/2010/06/how-to-install-apple-mac-osx-fonts-in.html
+    And the shady mirrors:
+    http://www.multiupload.nl/ZQ5V42473G
+    http://freestorage.ro/2tvmlx1ydcr0/macfonts.tar.gz.html"
+fi
+
 # Packages I don't need or want.
 remove=( b43-fwcutter
             b43-openfwwf
@@ -238,8 +252,6 @@ python -c "import bugz" || { \
     cd $setup
 }
 
-# Download extract install MS fonts.
-
 # Edit infinality-settings.sh. Yay pretty fonts!
 sed -i '/USE_STYLE=/ s/DEFAULT/INFINALITY/' /etc/profile.d/infinality-settings.sh
 /etc/fonts/infinality/infctl.sh makestyles
@@ -250,13 +262,19 @@ cp -f /home/dwlocks/dotfiles/etc/20-synaptics.conf /etc/X11/xorg.conf.d
 
 disable_svcs() {
     # Takes a list of services to disable
-    # Disable in a loop, because failure messages are not clear
+    # Disable in a loop, because failure messages are not clear. In
+    # addition, is-enabled is not reliable
     for svc in $@; do
         systemctl stop "${svc}"
         systemctl disable --no-reload "${svc}"
         wanted_by=$(find /usr/lib/systemd -wholename "*.wants/${svc}*")
         if [ "$wanted_by" ]; then
             echo "${svc} still wanted by ${wanted_by}"
+            read -p "Shall I mask it? (y/N)"
+            case $REPLY in
+                [Yy]*) systemctl mask ${svc};;
+                [Nn]*) : ;;
+            esac
         fi
     done
     # Reload at the end only.
@@ -317,10 +335,11 @@ for svc in ${storage_svc[@]}; do
             ;;
     esac
 done
-echo "Disabling: ${storage_svc_to_disable[@]}"
-read -p "ctrl-c to quit or Enter to disable"
-disable_svcs "${storage_svc_to_disable[@]}"
-
+if [ "${storage_svc_to_disable[*]}" ]; then
+    echo "Disabling: ${storage_svc_to_disable[@]}"
+    read -p "ctrl-c to quit or Enter to disable"
+    disable_svcs "${storage_svc_to_disable[@]}"
+fi
 
 # TODO:
 
@@ -333,6 +352,6 @@ disable_svcs "${storage_svc_to_disable[@]}"
 # "PCIe ASPM disabled" mean.
 #
 
-# Cleanup
+# Cleanup.  TODO: us a trap.
 cd /
 rm -rf $setup

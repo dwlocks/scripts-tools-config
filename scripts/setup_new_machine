@@ -14,6 +14,10 @@ case $some_top in
     ;;
 esac
 
+# Find repo root.
+SCRIPTPATH=$( cd $(dirname $0) ; pwd -P )
+repo=${SCRIPTPATH%/scripts*}
+
 # Use /tmp/setup to avoid wearing out the flash drive
 setup=/tmp/setup
 mkdir $setup
@@ -26,6 +30,7 @@ go_or_die() {
 
 
 # Check for software and helper scripts.
+echo "Checking Repos..."
 repolist="$(yum -q repolist)"
 # Adds freetype patches repo
 case $repolist in
@@ -61,6 +66,7 @@ yum_plugins=( yum-plugin-fastestmirror
 # Use this for yum to reduce output
 yum="yum -q -y --errorlevel=0 --rpmverbosity=error"
 
+echo "Checking Yum plugins..."
 rpm -qi ${yum_plugins[@]} &>/dev/null || \
     ${yum} install "${yum_plugins[@]}" || \
     go_or_die "Yum plugin install failed."
@@ -116,6 +122,7 @@ gui_pkgs=( ctan-cm-lgc-roman-fonts.noarch
         t1lib.$ARCH
         thunderbird.$ARCH
         )
+
 amanda_pkgs=( gcc.$ARCH
         automake.noarch
         autoconf.noarch
@@ -125,7 +132,8 @@ amanda_pkgs=( gcc.$ARCH
         readline-devel.$ARCH
         )
 
-# Find missing packages (Set theory in bash!)
+echo "Find missing packages..."
+# Set operations in bash!
 # Add arch suffix to make sure 32bit packages match.
 # http://www.catonmat.net/blog/set-operations-in-unix-shell/
 missing=( $(comm -23 \
@@ -141,7 +149,12 @@ if [ "${#missing[@]}" -gt 0 ]; then
 fi
 
 # Two extra font packages: microsoft and apple
-${yum} install "http://avi.alkalay.net/software/webcore-fonts/webcore-fonts-vista-3.0-1.noarch.rpm"
+echo 'Check for M$ft fonts...'
+ms_fonts=webcore-fonts-vista
+rpm -qa $ms_fonts > /dev/null || \
+    ${yum} install "http://avi.alkalay.net/software/webcore-fonts/$ms_fonts-3.0-1.noarch.rpm"
+
+echo "Check for Apple fonts..."
 if [ /tmp/macfonts.tar.gz ]; then
     # Untar, update cache, be happy.
     [ ! /usr/share/fonts/macfonts ] && \
@@ -201,6 +214,7 @@ if [ "${#bloat[@]}" -gt 0 ]; then
 fi
 
 if [ "$usage_type" == "lap" ] && ! rpm -qi laptop-mode-tools &>/dev/null ; then
+    echo "Installing laptop-mode-tools..."
     # Download, build and install laptop-mode-tools.  Maybe check for a new one?
     mkdir rpmbuild
     l_m_t=laptop-mode-tools
@@ -227,17 +241,20 @@ if [ ! -d $extensions_dir/$maximus  ]; then
     go_or_die "maximus extension didn't install."
 fi
 
+## Zmanda's vpn
+# Network Connect client from Juniper.
+echo "Checking for Network Connect client..."
 ncui="ncui-7.2R4.i386.rpm"
 if [ ! -d /usr/local/nc ]; then
     # requires glibc.i686 and zlib.i686, should be installed above.
     wget -c -O $setup/$ncui "http://www.tcnj.edu/~nts/downloads/NetworkConnect/$ncui" && \
     rpm -i "$setup/$ncui" || \
     go_or_die "NetworkConnect client didn't install."
-    cp /home/dwlocks/dotfiles/scripts/getx509certificate.sh /usr/local/nc/
+    cp $repo/scripts/getx509certificate.sh /usr/local/nc/
     # add some lines to sudoers
-    cat /home/dwlocks/dotfiles/etc/sudoers-zmanda-vpn
+    cat $repo/etc/sudoers-zmanda-vpn
     read -p "Does this look right? (ctrl-c to quit, Enter to continue)"
-    cp -f /home/dwlocks/dotfiles/etc/sudoers-zmanda-vpn /etc/sudoers.d/
+    cp -f $repo/etc/sudoers-zmanda-vpn /etc/sudoers.d/
     chmod 0440 /etc/sudoers.d/sudoers-zmanda-vpn
     visudo -c
 fi
@@ -258,8 +275,13 @@ sed -i '/USE_STYLE=/ s/DEFAULT/INFINALITY/' /etc/profile.d/infinality-settings.s
 /etc/fonts/infinality/infctl.sh makestyles
 /etc/fonts/infinality/infctl.sh setstyle infinality
 
-# Copy synaptics tweaks to /etc
-cp -f /home/dwlocks/dotfiles/etc/20-synaptics.conf /etc/X11/xorg.conf.d
+## Install files in /etc
+# Copy synaptics tweaks
+cp -f $repo/etc/20-synaptics.conf /etc/X11/xorg.conf.d
+
+# Allow toggling wifi on samsung 900x4d
+cp -f $repo/etc/rfkill-toggle /etc/acpi/actions/rfkill-toggle
+
 
 disable_svcs() {
     # Takes a list of services to disable
@@ -353,6 +375,6 @@ fi
 # "PCIe ASPM disabled" mean.
 #
 
-# Cleanup.  TODO: us a trap.
+# Cleanup.  TODO: use a trap.
 cd /
 rm -rf $setup

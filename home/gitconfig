@@ -7,5 +7,7 @@
 	editor = vim
 [color]
 	ui = true
+        diff = true
+        branch = true
 [help]
 	autocorrect = 1

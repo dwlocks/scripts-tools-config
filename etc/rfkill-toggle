@@ -1,0 +1,6 @@
+#!/bin/bash
+# Location: /etc/acpi/actions
+# Perms: ugo+rx
+
+# 1 means on.  Requires rfkill package.
+[ "$(</sys/class/rfkill/rfkill0/state)" = "1" ] && rfkill block 0 || rfkill unblock 0

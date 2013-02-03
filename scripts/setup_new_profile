@@ -1,5 +1,10 @@
 #!/bin/bash
 # This set fixes up the profile.  Run for each user!
+
+# Find repo root.
+SCRIPTPATH=$( cd $(dirname $0) ; pwd -P )
+repo=${SCRIPTPATH%/scripts*}
+
 # Startup items to remove from gnome-session (gnome-session-properties):
 startup_items=( at-spi-dbus-bus.desktop
 caribou-autostart.desktop
@@ -42,7 +47,7 @@ gor_dir=~/bin/gorilla
 )
 ln -f -s ~/bin/gorilla/sources/gorilla.tcl ~/bin/gorilla-1.5.3.6.3
 mkdir -p ~/.local/share/applications
-cp -f ./home/local/share/applications/gorilla-1.5.3.6.3.desktop ~/.local/share/applications
+cp -f $repo/home/local/share/applications/gorilla-1.5.3.6.3.desktop ~/.local/share/applications
 
 # Set up gnome-shell auto-move-windows:
 gsettings set org.gnome.shell.extensions.auto-move-windows application-list \
@@ -50,7 +55,7 @@ gsettings set org.gnome.shell.extensions.auto-move-windows application-list \
 
 # Remove a couple icons
 gsettings set org.gnome.shell.extensions.icon-manager top-bar \
-    "['a11y', 'keyboard']"
+    "['a11y']"
 
 # Enable extensions: maximus axe-menu auto-move-windows icon-manager,
 #    pidgin-integration, alternate-tab
@@ -66,20 +71,22 @@ for ext in $ext_uuids; do
 done
 
 # Set up syndaemon autostart
-cp ./home/config/autostart/syndaemon.desktop ~/.config/autostart
+cp $repo/home/config/autostart/syndaemon.desktop ~/.config/autostart
+# Disable gnome control of synaptics vars
+gsettings set org.gnome.settings-daemon.plugins.mouse active false
 
 # Install dotfiles (copy for screen and...)
-cd ~/dotfiles/home
+cd $repo/home
 
 for f in $(find . -type f); do
     # If it's a file, back that shit up.
     # If it's a link already, leave it alone.
     f=${f#./}
-    [ -h ~/.$f ] || ln -b -s ~/dotfiles/home/$f ~/.$f
+    [ -h ~/.$f ] || ln -b -s $repo/home/$f ~/.$f
 done
 
 # Fix ssh perms
-chmod -R go-rwx ~/dotfiles/home/ssh
+chmod -R go-rwx $repo/home/ssh
 # Install and update vim settings.
 
 cd ~/.vim

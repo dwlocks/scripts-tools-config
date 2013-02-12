@@ -108,10 +108,8 @@ gui_pkgs=( ctan-cm-lgc-roman-fonts.noarch
         google-droid-sans-fonts.noarch
         gnome-shell-extension-auto-move-windows.noarch
         gnome-shell-extension-pidgin.$ARCH
-        gnome-shell-extension-user-theme.noarch
-        gnome-shell-extension-theme-selector.noarch
         gnome-shell-extension-alternate-tab.noarch
-        gnome-shell-extension-icon-manager.noarch
+        gnome-shell-extension-remove-accessibility-icon.noarch
         gnome-tweak-tool.noarch
         itcl.$ARCH
         libreoffice-base.$ARCH
@@ -121,6 +119,7 @@ gui_pkgs=( ctan-cm-lgc-roman-fonts.noarch
         pidgin.$ARCH
         t1lib.$ARCH
         thunderbird.$ARCH
+        xchat.$ARCH
         )
 
 amanda_pkgs=( gcc.$ARCH
@@ -157,7 +156,7 @@ rpm -qa $ms_fonts > /dev/null || \
 echo "Check for Apple fonts..."
 if [ /tmp/macfonts.tar.gz ]; then
     # Untar, update cache, be happy.
-    [ ! /usr/share/fonts/macfonts ] && \
+    [ ! -d /usr/share/fonts/macfonts ] && \
         tar -C /usr/share/fonts -zxf /tmp/macfonts.tar.gz && \
         fc-cache -v -s
 else
@@ -218,28 +217,32 @@ if [ "$usage_type" == "lap" ] && ! rpm -qi laptop-mode-tools &>/dev/null ; then
     # Download, build and install laptop-mode-tools.  Maybe check for a new one?
     mkdir rpmbuild
     l_m_t=laptop-mode-tools
-    v=1.6.2
+    v=1.62
     [ -f ./$l_m_t ] || wget "http://samwel.tk/laptop_mode/tools/downloads/${l_m_t}_${v}.tar.gz"
     # Make sure not to build on flash-drive!
     rpmbuild -tb ${l_m_t}_${v}.tar.gz --define "_topdir $PWD/rpmbuild" && \
         ${yum} install $PWD/rpmbuild/RPMS/noarch/${l_m_t}-${v}*.rpm || \
         go_or_die "laptop-mode-tools didn't seem to build."
+    systemctl enable laptop-mode.service
+    # Defaults are better than nothing
+    systemctl start laptop-mode.service
+    echo "If this is a clean install of laptop-mode-tools, adjust the configs:
+        /etc/laptop-mode/laptop-mode.conf
+        /etc/laptop-mode/conf.d/bluetooth.conf
+        /etc/laptop-mode/conf.d/lcd-brightness.conf
+        /etc/laptop-mode/conf.d/video-out.conf
+    and any other that look interesting."
 fi
 
-# Extensions downloaded individually don't have consistent enough naming to
-# easily factor into a nice function.
-extensions_dir=/usr/share/gnome-shell/extensions
-if [ ! -d $extensions_dir/axemenu@wheezy ]; then
-    wget -c -O $setup/axemenu-gnome-shell.tar.gz "http://k210.org/axemenu/last/" && \
-    tar -zxf $setup/axemenu-gnome-shell.tar.gz -C $extensions_dir/ || \
-    go_or_die "axmenu didn't install."
-fi
-maximus=maximus@mathematical.coffee.gmail.com
-if [ ! -d $extensions_dir/$maximus  ]; then
-    wget -c -O $setup/$maximus.zip https://bitbucket.org/mathematicalcoffee/maximus-gnome-shell-extension/downloads/gnome3.4_$maximus.zip && \
-    unzip -o -d $extensions_dir $setup/$maximus.zip || \
-    go_or_die "maximus extension didn't install."
-fi
+# Modify the default theme (dangerous?  sure!  nicer too.)
+# Thanks to: http://simko.web.cern.ch/simko/gnome.html
+echo "Slimming title bar and remove for maximized windows..."
+t_dir=/usr/share/themes/Adwaita/metacity-1
+cp $t_dir/metacity-theme-3.xml $t_dir/backup_metacity-theme-3.xml
+sed -i '/title_vertical_pad/s|value="[0-9]\{1,2\}"|value="1"|g' \
+       $t_dir/metacity-theme-3.xml
+sed -i -r '/has_title="false"/! { s|(<frame_geometry name="max")|\1 has_title="false"| }' \
+       $t_dir/metacity-theme-3.xml
 
 ## Zmanda's vpn
 # Network Connect client from Juniper.
@@ -304,9 +307,9 @@ disable_svcs() {
     systemctl daemon-reload
 }
 
+    #abrt-ccpp
+    #abrt-xorg.service
 unused_services=( auditd.service
-    abrt-ccpp
-    abrt-xorg.service
     avahi-daemon.service
     colord-sane.service
     cryptsetup.target

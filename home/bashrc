@@ -15,7 +15,7 @@ case $TERM in
     screen) [ -e /usr/share/terminfo/s/screen-256color ] && export TERM=screen-256color ;;
 esac
 # Set the prompt
-export PS1='\[\033[01;32m\]\h:\[\033[01;34m\]\w\n\A \$ \[\033[00m\]'
+export PS1='\[\e[01;32m\]\h:\[\e[01;34m\]\w\n\A \$ \[\e[0000m\]'
 export PS2='---> '
 export EDITOR=vim
 export VISUAL=vim
@@ -29,7 +29,6 @@ export LESS='-R'
 alias vim='gvim -v'
 alias la='ls -a'
 alias lah='ls -lah'
-alias scd='screenkey -D -RR'
 alias rgrep="find . -name .svn -prune -o -name '*.pyc' -prune -o -name '*.swp' -prune -o -type f -print0 | xargs -0 grep --color "
 alias pip='pip-python'
 #[ -x /opt/CollabNet_Subversion/bin/svn_wrapper ] && alias svn=/opt/CollabNet_Subversion/bin/svn_wrapper
@@ -45,7 +44,7 @@ bb="$z/tools/trunk/buildbot/"
 
 # This set of functions start new screens with nice titles...
 svim() {
-    screenkey -t $1 vim $1
+    screenkey -t "$1" vim "$1"
 }
 
 go() {
@@ -59,5 +58,15 @@ sssh() {
         buildslave@*) title=${1/buildslave@/bs@};;
         *) title=${1}
     esac
-    screenkey -t $title ssh $@
+    screenkey -t "$title" ssh "$@"
+}
+ssu() {
+    case x$1 in
+      # Su w/o environment: either root or another user.
+      x-) [ x"$2" = x"" ] && title="-#" || title="$2" ;;
+      # Su to root keeping environment.
+      x) title="#" ;;
+      *) title="$2" ;;
+    esac
+    screenkey -t "$title" su "$@"
 }

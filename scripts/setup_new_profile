@@ -47,7 +47,7 @@ gor_dir=~/bin/gorilla
 )
 ln -f -s ~/bin/gorilla/sources/gorilla.tcl ~/bin/gorilla-1.5.3.6.3
 mkdir -p ~/.local/share/applications
-cp -f $repo/home/local/share/applications/gorilla-1.5.3.6.3.desktop ~/.local/share/applications
+cp -f --backup=none $repo/home/local/share/applications/gorilla-1.5.3.6.3.desktop ~/.local/share/applications
 
 # Set up gnome-shell auto-move-windows:
 gsettings set org.gnome.shell.extensions.auto-move-windows application-list \
@@ -57,13 +57,12 @@ gsettings set org.gnome.shell.extensions.auto-move-windows application-list \
 gsettings set org.gnome.shell.extensions.icon-manager top-bar \
     "['a11y']"
 
-# Enable extensions: maximus axe-menu auto-move-windows icon-manager,
+# Enable extensions: auto-move-windows remove-accessibility-icon,
 #    pidgin-integration, alternate-tab
-ext_uuids="maximus@mathematical.coffee.gmail.com
-axemenu@wheezy
-alternate-tab@gnome-shell-extensions.gcampax.github.com
+ext_uuids="alternate-tab@gnome-shell-extensions.gcampax.github.com
 auto-move-windows@gnome-shell-extensions.gcampax.github.com
-icon-manager@krajniak.info
+remove-accessibility-icon@martin-weusten.de
+permanent-notifications@bonzini.org
 pidgin-conversation-integration@kagesenshi.org"
 for ext in $ext_uuids; do
     # This tool complains loudly if the extensions are already enabled.
@@ -71,7 +70,7 @@ for ext in $ext_uuids; do
 done
 
 # Set up syndaemon autostart
-cp $repo/home/config/autostart/syndaemon.desktop ~/.config/autostart
+cp -f --backup=none $repo/home/config/autostart/syndaemon.desktop ~/.config/autostart
 # Disable gnome control of synaptics vars
 gsettings set org.gnome.settings-daemon.plugins.mouse active false
 

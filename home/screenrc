@@ -5,3 +5,4 @@ vbell on
 vbell_msg "<ding!>"
 defscrollback 1024
 escape ^Xx
+shelltitle 'bash'

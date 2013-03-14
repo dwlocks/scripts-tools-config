@@ -90,6 +90,7 @@ system_pkgs=( aircrack-ng.$ARCH
         screen.$ARCH
         source-highlight.$ARCH
         subversion.$ARCH
+        subversion-gnome.$ARCH
         sysstat.$ARCH
         wireshark.$ARCH
         )

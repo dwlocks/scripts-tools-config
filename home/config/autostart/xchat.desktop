@@ -1,0 +1,9 @@
+[Desktop Entry]
+Type=Application
+Exec=/usr/bin/xchat
+Hidden=false
+X-GNOME-Autostart-enabled=true
+Name[en_US]=xchat
+Name=xchat
+Comment[en_US]=IRC Client
+Comment=IRC Client

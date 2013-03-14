@@ -1,6 +1,6 @@
 [Desktop Entry]
 Type=Application
-Exec=/usr/bin/syndaemon -i .5 -k -K -R
+Exec=/usr/bin/syndaemon -i .5 -k -R
 Hidden=false
 X-GNOME-Autostart-enabled=true
 Name[en_US]=syndaemon

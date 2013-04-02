@@ -37,6 +37,15 @@ for item in ${startup_items[@]}; do
         ' < /etc/xdg/autostart/$item > $a_s_dir/$item
 done
 
+CP="cp -f --backup=none"
+for p in $repo/home/config/autostart/*; do
+    if which $(basename $p ".desktop") 2>/dev/null; then
+        $CP $p $a_s_dir
+    else
+        echo "$p wasn't in our path. Maybe not installed?"
+    fi
+done
+
 # clone gorilla password safe
 gor_dir=~/bin/gorilla
 [ -d ~/bin/gorilla ] || mkdir -p ~/bin/gorilla
@@ -47,7 +56,7 @@ gor_dir=~/bin/gorilla
 )
 ln -f -s ~/bin/gorilla/sources/gorilla.tcl ~/bin/gorilla-1.5.3.6.3
 mkdir -p ~/.local/share/applications
-cp -f --backup=none $repo/home/local/share/applications/gorilla-1.5.3.6.3.desktop ~/.local/share/applications
+$CP $repo/home/local/share/applications/gorilla-1.5.3.6.3.desktop ~/.local/share/applications
 
 # Set up gnome-shell auto-move-windows:
 gsettings set org.gnome.shell.extensions.auto-move-windows application-list \
@@ -69,10 +78,18 @@ for ext in $ext_uuids; do
     gnome-shell-extension-tool -e "$ext" 2>/dev/null
 done
 
-# Set up syndaemon autostart
-cp -f --backup=none $repo/home/config/autostart/syndaemon.desktop ~/.config/autostart
 # Disable gnome control of synaptics vars
 gsettings set org.gnome.settings-daemon.plugins.mouse active false
+
+# Copy monitor profiles.
+icc_dir=~/.local/share/icc
+[ -d $icc_dir ] || mkdir -p $icc_dir
+$CP $repo/home/local/share/icc/* $icc_dir
+# Delete the xcalib autostart not on the samsung.  If a profile appears for
+# other monitores, this will get more complex.
+if [ ! $(dmidecode -s baseboard-product-name) = "NP900X4D-A05US" ]; then
+    rm $a_s_dir/xcalib.desktop
+fi
 
 # Install dotfiles (copy for screen and...)
 cd $repo/home

@@ -1,0 +1,9 @@
+[Desktop Entry]
+Type=Application
+Exec=xcalib /home/dwlocks/.local/share/icc/Spyder4Express_X4C.icm
+Hidden=false
+X-GNOME-Autostart-enabled=true
+Name[en_US]=xcalib loader
+Name=Gamma reduction
+Comment[en_US]=Load a decent color profile
+Comment=Reduce gamma washout

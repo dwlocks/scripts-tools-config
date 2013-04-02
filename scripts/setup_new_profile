@@ -1,9 +1,46 @@
 #!/bin/bash
 # This set fixes up the profile.  Run for each user!
 
+# Generally:
+# 1. Clone repos
+# 2. Setup autostarts
+# 3. Configure Gnome
+# 4. LINK FILES
+# 5. Cleanup
+
 # Find repo root.
 SCRIPTPATH=$( cd $(dirname $0) ; pwd -P )
 repo=${SCRIPTPATH%/scripts*}
+
+###
+# Clone repos
+
+# Install and update vim settings.
+[ -d ~/.vim ] || mkdir ~/.vim
+(
+    cd ~/.vim
+    if [ ! -d ~/.vim/.git ]; then
+        git clone git@github.com:dwlocks/dotvim.git ~/.vim
+        git submodule update --init
+        ln -s .vim/vimrc .vimrc
+        ln -s .vim/gvimrc .gvimrc
+    else
+        git pull origin
+    fi
+)
+
+# clone gorilla password safe
+gor_dir=~/bin/gorilla
+[ -d ~/bin/gorilla ] || mkdir -p ~/bin/gorilla
+(
+    cd ~/bin/
+    [ -d gorilla/.git ] || git clone git://github.com/zdia/gorilla.git
+    cd gorilla && git checkout v1.5.3.6.3
+)
+ln -f -s ~/bin/gorilla/sources/gorilla.tcl ~/bin/gorilla-1.5.3.6.3
+
+###
+# Setup autostart items
 
 # Startup items to remove from gnome-session (gnome-session-properties):
 startup_items=( at-spi-dbus-bus.desktop
@@ -37,34 +74,12 @@ for item in ${startup_items[@]}; do
         ' < /etc/xdg/autostart/$item > $a_s_dir/$item
 done
 
-CP="cp -f --backup=none"
-for p in $repo/home/config/autostart/*; do
-    if which $(basename $p ".desktop") 2>/dev/null; then
-        $CP $p $a_s_dir
-    else
-        echo "$p wasn't in our path. Maybe not installed?"
-    fi
-done
-
-# clone gorilla password safe
-gor_dir=~/bin/gorilla
-[ -d ~/bin/gorilla ] || mkdir -p ~/bin/gorilla
-(
-    cd ~/bin/
-    [ -d gorilla/.git ] || git clone git://github.com/zdia/gorilla.git
-    cd gorilla && git checkout v1.5.3.6.3
-)
-ln -f -s ~/bin/gorilla/sources/gorilla.tcl ~/bin/gorilla-1.5.3.6.3
-mkdir -p ~/.local/share/applications
-$CP $repo/home/local/share/applications/gorilla-1.5.3.6.3.desktop ~/.local/share/applications
+###
+# Configure Gnome
 
 # Set up gnome-shell auto-move-windows:
 gsettings set org.gnome.shell.extensions.auto-move-windows application-list \
     "['gnome-terminal.desktop:1','firefox.desktop:2','mozilla-thunderbird.desktop:3']"
-
-# Remove a couple icons
-gsettings set org.gnome.shell.extensions.icon-manager top-bar \
-    "['a11y']"
 
 # Enable extensions: auto-move-windows remove-accessibility-icon,
 #    pidgin-integration, alternate-tab
@@ -81,37 +96,31 @@ done
 # Disable gnome control of synaptics vars
 gsettings set org.gnome.settings-daemon.plugins.mouse active false
 
-# Copy monitor profiles.
-icc_dir=~/.local/share/icc
-[ -d $icc_dir ] || mkdir -p $icc_dir
-$CP $repo/home/local/share/icc/* $icc_dir
-# Delete the xcalib autostart not on the samsung.  If a profile appears for
-# other monitores, this will get more complex.
-if [ ! $(dmidecode -s baseboard-product-name) = "NP900X4D-A05US" ]; then
-    rm $a_s_dir/xcalib.desktop
-fi
+mkdir -p ~/.local/share/icc
+mkdir -p ~/.local/share/applications
+# TODO: create missing dirs from found list of files below.
 
-# Install dotfiles (copy for screen and...)
+###
+# Link all files in $repo/home to their appropriate hidden locations.
+# This is the heavy lifting.
 cd $repo/home
-
 for f in $(find . -type f); do
     # If it's a file, back that shit up.
     # If it's a link already, leave it alone.
     f=${f#./}
+    echo "Linking $f"
     [ -h ~/.$f ] || ln -b -s $repo/home/$f ~/.$f
 done
 
+###
+# Cleanup
+
+# Delete the xcalib autostart unless on the samsung.  If a profile appears for
+# other monitores, this will get more complex.
+case $(< /sys/class/dmi/id/board_name) in
+    "NP900X4D-A05US") : ;;
+    *) rm $a_s_dir/xcalib.desktop ;;
+esac
+
 # Fix ssh perms
 chmod -R go-rwx $repo/home/ssh
-# Install and update vim settings.
-
-cd ~/.vim
-if [ ! -d ~/.vim/.git ]; then
-    git clone git@github.com:dwlocks/dotvim.git ~/.vim
-    git submodule update --init
-    ln -s .vim/vimrc .vimrc
-    ln -s .vim/gvimrc .gvimrc
-else
-    git pull origin
-fi
-cd ..

@@ -113,7 +113,6 @@ gui_pkgs=( ctan-cm-lgc-roman-fonts.noarch
         gnome-shell-extension-remove-accessibility-icon.noarch
         gnome-tweak-tool.noarch
         itcl.$ARCH
-        libreoffice-base.$ARCH
         libreoffice-core.$ARCH
         libreoffice-calc.$ARCH
         libreoffice-writer.$ARCH
@@ -129,6 +128,7 @@ amanda_pkgs=( gcc.$ARCH
         flex.$ARCH
         glib2-devel.$ARCH
         libcurl-devel.$ARCH
+        libtool.$ARCH
         readline-devel.$ARCH
         )
 

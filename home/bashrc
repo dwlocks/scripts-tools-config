@@ -29,13 +29,14 @@ export LESS='-R'
 alias vim='gvim -v'
 alias la='ls -a'
 alias lah='ls -lah'
-alias rgrep="find . -name .svn -prune -o -name '*.pyc' -prune -o -name '*.swp' -prune -o -type f -print0 | xargs -0 grep --color "
+alias rgrep="find . -name .svn -prune -o -name '*.pyc' -prune -o -name '*.swp' -prune -o -type f -print0 | xargs -0 grep --color=always "
+alias cgrep="grep --color=always"
 alias pip='pip-python'
 #[ -x /opt/CollabNet_Subversion/bin/svn_wrapper ] && alias svn=/opt/CollabNet_Subversion/bin/svn_wrapper
 # Zmanda svn urls
 amtrunk="http://svn.zmanda.com/amanda/trunk/"
 am="http://svn.zmanda.com/amanda/"
-sf="https://amanda.svn.sourceforge.net:443/svnroot/amanda/"
+sf="https://svn.code.sf.net/p/amanda/code"
 comm="${sf}amanda/"
 commtrunk="${comm}trunk/"
 z="http://svn.zmanda.com"

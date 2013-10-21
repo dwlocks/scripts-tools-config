@@ -1,0 +1,9 @@
+[Desktop Entry]
+Type=Application
+Exec=xkbset -a
+Hidden=false
+X-GNOME-Autostart-enabled=true
+Name[en_US]=Disable accessx features
+Name=Disable accessx features
+Comment[en_US]=prevents slowkeys on >10s shift hold
+Comment=prevents slowkeys on >10s shift hold

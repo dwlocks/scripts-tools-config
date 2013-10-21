@@ -32,6 +32,7 @@ alias lah='ls -lah'
 alias rgrep="find . -name .svn -prune -o -name '*.pyc' -prune -o -name '*.swp' -prune -o -type f -print0 | xargs -0 grep --color=always "
 alias cgrep="grep --color=always"
 alias pip='pip-python'
+alias builder='/opt/installbuilder-8.5.2/bin/builder --setvars project.enableDebugger=1 --setvars project.version=1.2.345'
 #[ -x /opt/CollabNet_Subversion/bin/svn_wrapper ] && alias svn=/opt/CollabNet_Subversion/bin/svn_wrapper
 # Zmanda svn urls
 amtrunk="http://svn.zmanda.com/amanda/trunk/"
@@ -67,8 +68,9 @@ sssh() {
     case $1 in
         root@*) title=${1/root@/#};;
         buildslave@*) title=${1/buildslave@/bs@};;
-        *) title=${1}
+        *) title=${1} ;;
     esac
+    export title
     screenkey -t "$title" ssh "$@"
 }
 ssu() {

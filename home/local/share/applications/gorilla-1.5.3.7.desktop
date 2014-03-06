@@ -1,7 +1,7 @@
 [Desktop Entry]
-Name=Password Gorilla 1.5363
+Name=Password Gorilla 1.537
 Comment=Password saver in TCL/GTK
-Exec=gorilla-1.5.3.6.3
+Exec=gorilla-1.5.3.7
 Icon=/home/dwlocks/bin/gorilla/sources/pics/gorilla.ico
 Terminal=false
 Type=Application

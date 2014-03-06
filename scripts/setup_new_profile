@@ -35,9 +35,9 @@ gor_dir=~/bin/gorilla
 (
     cd ~/bin/
     [ -d gorilla/.git ] || git clone git://github.com/zdia/gorilla.git
-    cd gorilla && git checkout v1.5.3.6.3
+    cd gorilla && git checkout v1.5.3.7
 )
-ln -f -s ~/bin/gorilla/sources/gorilla.tcl ~/bin/gorilla-1.5.3.6.3
+ln -f -s ~/bin/gorilla/sources/gorilla.tcl ~/bin/gorilla-1.5.3.7
 
 ###
 # Setup autostart items

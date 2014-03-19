@@ -1,0 +1,41 @@
+#! /bin/bash
+#set -x
+# hard-link the SSH socket to one with a fixed name on the local
+# machine, and set SSH_AUTH_SOCK to point to that fixed name.  Later
+# invocations of this script will change the link, but the name will
+# remain valid, allowing existing shells to continue to function.
+setup_fixed_socket() {
+  local old_socket="$SSH_AUTH_SOCK"
+  # Systems that use /run for session sockets can't hardlink across devices
+  # to tmp.
+  local socket_dir="/run/user/${USERNAME}/$(uname -n)-$(id -u)"
+  local socket_file=$socket_dir/agent
+
+  # If we already ran, don't try to setup again. (We were probably called
+  # from inside screen.)
+  [ "$old_socket" != "$socket_file" ] && { \
+
+    # set up the directory and permissions
+    [ -e $socket_dir ] || mkdir -p $socket_dir
+    chmod 700 $socket_dir
+
+    # remove an existing link
+    [ -e $socket_file ] && rm $socket_file
+
+    # hard-link in the new one
+    ln $old_socket $socket_file
+  }
+  # return the new socket
+  echo $socket_file
+}
+
+# this variable will be exported to every shell opened by this
+# invocation of screen -- even subsequent connections to it.  This
+# variable may live for days or weeks.
+export SSH_AUTH_SOCK=$(setup_fixed_socket)
+
+# finally, fire up screen.  Check if we're already in a session, else try
+# reattaching to a running session; otherwise start up a new one
+[ "$STY" ] && \
+    screen "${@}" || \
+    screen -D -R "${@}"

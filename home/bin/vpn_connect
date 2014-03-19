@@ -1,0 +1,41 @@
+#!/bin/bash
+# $1 can be "ui".  default is to NOT use java for the ui.
+NCUI="/usr/bin/java -jar /usr/local/nc74/NC.jar"
+NCSVC="/usr/local/nc74/ncsvc"
+#NCSVC="${HOME}/.juniper_networks/network_connect/ncsvc"
+GETX509="/usr/local/nc/getx509certificate.sh"
+HOST="vpn.zmanda.com"
+CERT="${HOME}/.juniper_networks/zmanda_cert"
+USERNAME=`id -u -n`
+
+if [ "$1" = "ui" ] ; then
+    VPN=${NCUI}
+else
+    VPN=${NCSVC}
+fi
+
+read -s -p "VPN (ldap) Password: " PASSWORD
+echo ""
+# First Kill hung ncsvc
+sudo ${NCSVC} -K || exit 1
+
+# Check for still running ncsvc processes
+ps --no-headers -C ncsvc && echo "ncsvc already running." && exit 1
+
+# Check the cert
+if [ ! -f ${CERT} ] ; then
+    ${GETX509} ${HOST} ${CERT} || exit 1
+    [ -f ${CERT} ] || exit 1
+fi
+# Now connect, like you've never connected before!
+echo "Command:  echo 'PASSWORD' | sudo ${VPN} -h ${HOST} -u ${USERNAME} -f ${CERT} -L 5"
+echo ${PASSWORD} | sudo ${VPN} -h ${HOST} -u ${USERNAME} -f ${CERT} -L 5 > /tmp/ncsvc-output.log &
+
+until ping -c 1 peter &> /dev/null ; do
+    if ! ps -C ncsvc &> /dev/null ; then
+        echo "Connect failed. /tmp/ncsvc-output.log:"
+        cat /tmp/ncsvc-output.log
+        exit 1
+    fi
+done
+echo " Done."

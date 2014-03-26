@@ -1,0 +1,11 @@
+[ui]
+username=Dan Locks <daniel.locks@here.com>
+#verbose=True
+#debug=True
+#ssh=ssh -vv
+
+[extensions]
+color=
+hgk=
+purge=
+pager= LESS='FRXd' less

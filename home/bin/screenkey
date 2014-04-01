@@ -8,12 +8,14 @@ setup_fixed_socket() {
   local old_socket="$SSH_AUTH_SOCK"
   # Systems that use /run for session sockets can't hardlink across devices
   # to tmp.
-  local socket_dir="/run/user/${USERNAME}/$(uname -n)-$(id -u)"
+  [ -d /run ] && \
+    local socket_dir="/run/user/${USER}/$(uname -n)-$(id -u)" || \
+    local socket_dir="/tmp/${USER}/$(uname -n)-$(id -u)"
   local socket_file=$socket_dir/agent
 
   # If we already ran, don't try to setup again. (We were probably called
   # from inside screen.)
-  [ "$old_socket" != "$socket_file" ] && { \
+  [ "$old_socket" != "$socket_file" ] && {
 
     # set up the directory and permissions
     [ -e $socket_dir ] || mkdir -p $socket_dir

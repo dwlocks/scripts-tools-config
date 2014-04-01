@@ -2,7 +2,7 @@
 Name=Password Gorilla 1.537
 Comment=Password saver in TCL/GTK
 Exec=gorilla-1.5.3.7
-Icon=/home/dwlocks/bin/gorilla/sources/pics/gorilla.ico
+Icon=/home/dwlocks/bin/gorilla/utilities/pics/gorilla.ico
 Terminal=false
 Type=Application
 Categories=Utility

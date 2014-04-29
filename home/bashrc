@@ -39,6 +39,12 @@ alias la='ls -a'
 alias lah='ls -lah'
 alias rgrep="find . -name .svn -prune -o -name '*.pyc' -prune -o -name '*.swp' -prune -o -type f -print0 | xargs -0 grep --color=always "
 alias pip='pip-python'
+
+if [ "$OSTYPE" = "cygwin" ]; then
+# ssh-pageant
+eval $(/usr/local/bin/ssh-pageant -ra /tmp/.ssh-pageant)
+fi
+
 alias builder='/opt/installbuilder-8.5.2/bin/builder --setvars project.enableDebugger=1 --setvars project.version=1.2.345'
 #[ -x /opt/CollabNet_Subversion/bin/svn_wrapper ] && alias svn=/opt/CollabNet_Subversion/bin/svn_wrapper
 # Zmanda svn urls

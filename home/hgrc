@@ -1,14 +1,14 @@
 [ui]
 username=Dan Locks <daniel.locks@here.com>
-#verbose=True
+verbose=True
 #debug=True
-#ssh=ssh -v -i ~/.ssh/linux_id_rsa
 
 [extensions]
 color=
 hgk=
 purge=
 pager=
+fetch=
 
 [pager]
 pager=LESS='FRXd' /usr/bin/less

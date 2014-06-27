@@ -2,6 +2,8 @@
 username=Dan Locks <daniel.locks@here.com>
 verbose=True
 #debug=True
+#ssh=/usr/bin/ssh -v
+merge=hgmerge.py
 
 [extensions]
 color=

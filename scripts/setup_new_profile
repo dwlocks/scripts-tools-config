@@ -98,7 +98,6 @@ gsettings set org.gnome.settings-daemon.plugins.mouse active false
 
 mkdir -p ~/.local/share/icc
 mkdir -p ~/.local/share/applications
-mkdir -p ~/.dir_colors
 # TODO: create missing dirs from found list of files below.
 
 ###

@@ -71,6 +71,7 @@ for item in ${startup_items[@]}; do
                 /^$/ a\
                 X-GNOME-Autostart-enabled=false
             }
+            s/NoDisplay=true/NoDisplay=false/
         ' < /etc/xdg/autostart/$item > $a_s_dir/$item
 done
 
@@ -85,7 +86,6 @@ gsettings set org.gnome.shell.extensions.auto-move-windows application-list \
 #    pidgin-integration, alternate-tab
 ext_uuids="alternate-tab@gnome-shell-extensions.gcampax.github.com
 auto-move-windows@gnome-shell-extensions.gcampax.github.com
-remove-accessibility-icon@martin-weusten.de
 permanent-notifications@bonzini.org
 pidgin-conversation-integration@kagesenshi.org"
 for ext in $ext_uuids; do

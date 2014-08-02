@@ -10,8 +10,11 @@ case $PATH in
 esac
 
 # Holy cow, colors!
+case $COLORTERM in
+    gnome-terminal) export TERM=vte-256color;;
+esac
+
 case $TERM in
-    xterm*) export TERM=xterm-256color ;;
     screen) export TERM=screen-256color ;;
     # Putty terminfo does not refresh correctly with vim
     putty*) export TERM=xterm-256color ;;
@@ -81,5 +84,5 @@ ssu() {
       x) title="#" ;;
       *) title="$2" ;;
     esac
-    screenkey -t "$title" su "$@"
+    ~/bin/screenkey -t "$title" /bin/sudo su "$@"
 }

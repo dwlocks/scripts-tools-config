@@ -29,6 +29,7 @@ export VISUAL=vim
 eval $(dircolors ~/.dir_colors)
 export PYTHONSTARTUP=~/scripts-tools-config/home/pythonStartup
 export GREP_OPTIONS='--color'
+export PAGER=less
 export LESS='-R'
 [ -f /usr/bin/source-highlight ] && \
     export LESSOPEN='||/usr/bin/source-highlight --failsafe -fesc -oSTDOUT --style-file=/usr/share/source-highlight/esc.style -i %s'

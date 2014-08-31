@@ -3,8 +3,8 @@
 [ -f /etc/bashrc ] && . /etc/bashrc
 
 case $PATH in
-    *$HOME/scripts*) : ;;
-    *) PATH="$HOME/bin:$HOME/Scripts:$PATH:.:/sbin:/usr/sbin"
+    *$HOME/bin*) : ;;
+    *) PATH="$HOME/bin:$PATH:.:/sbin:/usr/sbin"
         export PATH
         ;;
 esac
@@ -32,7 +32,8 @@ export VISUAL=vim
 eval $(dircolors ~/.dir_colors/dircolors.256dark)
 export PYTHONSTARTUP=~/scripts-tools-config/home/pythonStartup
 export GREP_OPTIONS='--color'
-export LESS='-R'
+# Leave colors, don't clear screen, exit if fits on screen
+export LESS='-RXF'
 [ -f /usr/bin/source-highlight ] && \
     export LESSOPEN='||/usr/bin/source-highlight --failsafe -fesc -oSTDOUT --style-file=/usr/share/source-highlight/esc.style -i %s'
 
@@ -84,5 +85,5 @@ ssu() {
       x) title="#" ;;
       *) title="$2" ;;
     esac
-    ~/bin/screenkey -t "$title" /bin/sudo su "$@"
+    ~/bin/screenkey -t "$title" /usr/bin/sudo su "$@"
 }

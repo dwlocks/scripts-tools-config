@@ -3,7 +3,7 @@ username=Dan Locks <daniel.locks@here.com>
 verbose=True
 #debug=True
 #ssh=/usr/bin/ssh -v
-merge=hgmerge.py
+merge=/usr/bin/merge
 
 [extensions]
 color=
@@ -11,6 +11,7 @@ hgk=
 purge=
 pager=
 fetch=
+shelve=
 
 [pager]
 pager=LESS='FRXd' /usr/bin/less

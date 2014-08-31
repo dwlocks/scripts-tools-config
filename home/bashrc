@@ -29,7 +29,7 @@ export PS1='\[\e[01;32m\]\h:\[\e[01;34m\]\w\n\A \$ \[\e[0000m\]'
 export PS2='---> '
 export EDITOR=vim
 export VISUAL=vim
-eval $(dircolors ~/.dir_colors/dircolors.256dark)
+eval $(dircolors ~/.dir_colors)
 export PYTHONSTARTUP=~/scripts-tools-config/home/pythonStartup
 export GREP_OPTIONS='--color'
 # Leave colors, don't clear screen, exit if fits on screen

@@ -1,0 +1,7 @@
+[Desktop Entry]
+Type=Application
+Exec=/home/dwlocks/bin/ibus_exit
+Hidden=false
+X-GNOME-Autostart-enabled=true
+Name=ibus_exit
+Comment=Disable annoying ibus processes

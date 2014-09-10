@@ -15,3 +15,4 @@ shelve=
 
 [pager]
 pager=LESS='FRXd' /usr/bin/less
+attend= help

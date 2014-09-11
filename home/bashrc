@@ -19,10 +19,6 @@ case $TERM in
     # Putty terminfo does not refresh correctly with vim
     putty*) export TERM=xterm-256color ;;
 esac
-# Now check and fallback
-[ -e /usr/share/terminfo/${TERM:0:1}/$TERM ] || \
-    TERM=xtermc
-
 
 # Set the prompt
 export PS1='\[\e[01;32m\]\h:\[\e[01;34m\]\w\n\A \$ \[\e[0000m\]'
@@ -38,10 +34,6 @@ export LESS='-RXF'
     export LESSOPEN='||/usr/bin/source-highlight --failsafe -fesc -oSTDOUT --style-file=/usr/share/source-highlight/esc.style -i %s'
 
 # Aliases go here.
-alias vim='gvim -v'
-alias la='ls -a'
-alias lah='ls -lah'
-alias rgrep="find . -name .svn -prune -o -name '*.pyc' -prune -o -name '*.swp' -prune -o -type f -print0 | xargs -0 grep --color=always "
 alias pip='pip-python'
 
 if [ "$OSTYPE" = "cygwin" ]; then

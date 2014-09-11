@@ -28,50 +28,61 @@ go_or_die() {
     read -p "^c to quit, or Enter to continue."
 }
 
+# If this is fedora
+if [ /etc/redhat-release ]; then
 
-# Check for software and helper scripts.
-echo "Checking Repos..."
-repolist="$(yum -q repolist)"
-# Adds freetype patches repo
-case $repolist in
-    *infinality*) : ;;
-    *) rpm -Uvh "http://www.infinality.net/fedora/linux/infinality-repo-1.0-1.noarch.rpm"
-esac
-# for flash.
-case $repolist in
-    *[Aa]dobe*) : ;;
-    *) rpm -Uvh "http://linuxdownload.adobe.com/adobe-release/adobe-release-x86_64-1.0-1.noarch.rpm"
-       rpm --import /etc/pki/rpm-gpg/RPM-GPG-KEY-adobe-linux
-    ;;
-esac
+    # Check for software and helper scripts.
+    echo "Checking Repos..."
+    repolist="$(yum -q repolist)"
+    # Adds freetype patches repo
+    case $repolist in
+        *infinality*) : ;;
+        *) rpm -Uvh "http://www.infinality.net/fedora/linux/infinality-repo-1.0-1.noarch.rpm"
+    esac
+    # for flash.
+    case $repolist in
+        *[Aa]dobe*) : ;;
+        *) rpm -Uvh "http://linuxdownload.adobe.com/adobe-release/adobe-release-x86_64-1.0-1.noarch.rpm"
+        rpm --import /etc/pki/rpm-gpg/RPM-GPG-KEY-adobe-linux
+        ;;
+    esac
 
-# RPMFusion
-F_REL=$(awk '{ print $3; }'</etc/redhat-release)
-case $repolist in
-    *rpmfusion*) : ;;
-    *) rpm --import "http://rpmfusion.org/keys?action=AttachFile&do=get&target=RPM-GPG-KEY-rpmfusion-free-fedora-$F_REL" \
-                    "http://rpmfusion.org/keys?action=AttachFile&do=get&target=RPM-GPG-KEY-rpmfusion-nonfree-fedora-$F_REL"
-       rpm -ivh "http://download1.rpmfusion.org/free/fedora/rpmfusion-free-release-stable.noarch.rpm" \
-                "http://download1.rpmfusion.org/nonfree/fedora/rpmfusion-nonfree-release-stable.noarch.rpm"
-    ;;
-esac
+    # RPMFusion
+    F_REL=$(awk '{ print $3; }'</etc/redhat-release)
+    case $repolist in
+        *rpmfusion*) : ;;
+        *) rpm --import "http://rpmfusion.org/keys?action=AttachFile&do=get&target=RPM-GPG-KEY-rpmfusion-free-fedora-$F_REL" \
+                        "http://rpmfusion.org/keys?action=AttachFile&do=get&target=RPM-GPG-KEY-rpmfusion-nonfree-fedora-$F_REL"
+        rpm -ivh "http://download1.rpmfusion.org/free/fedora/rpmfusion-free-release-stable.noarch.rpm" \
+                    "http://download1.rpmfusion.org/nonfree/fedora/rpmfusion-nonfree-release-stable.noarch.rpm"
+        ;;
+    esac
 
-# Add packages here so I don't have to remember them. Do yum first so others
-# are faster
-yum_plugins=( yum-plugin-fastestmirror
-        yum-plugin-show-leaves
-        yum-utils
-)
+    # Add packages here so I don't have to remember them. Do yum first so others
+    # are faster
+    yum_plugins=( yum-plugin-fastestmirror
+            yum-plugin-show-leaves
+            yum-utils
+    )
 
-# Use this for yum to reduce output
-yum="yum -q -y --errorlevel=0 --rpmverbosity=error"
+    # Use this for yum to reduce output
+    yum="yum -q -y --errorlevel=0 --rpmverbosity=error"
 
-echo "Checking Yum plugins..."
-rpm -qi ${yum_plugins[@]} &>/dev/null || \
-    ${yum} install "${yum_plugins[@]}" || \
-    go_or_die "Yum plugin install failed."
+    echo "Checking Yum plugins..."
+    rpm -qi ${yum_plugins[@]} &>/dev/null || \
+        ${yum} install "${yum_plugins[@]}" || \
+        go_or_die "Yum plugin install failed."
+
+# Otherwise, assume ubuntu
+else
+
+    # Add gnome ppa
+    add-apt-repository ppa:gnome3-team/gnome3
+fi
 
 ARCH=$(uname -m)
+
+# Just write a file with the package names we need for each distro
 system_pkgs=( aircrack-ng.$ARCH
         cabextract.$ARCH
         git.$ARCH
@@ -82,9 +93,10 @@ system_pkgs=( aircrack-ng.$ARCH
         vim-minimal.$ARCH
         ncurses-term.$ARCH
         nmap.$ARCH
+        r8168-dkms
+
         rdesktop.$ARCH
         rfkill.$ARCH
-        rpm-build.$ARCH
         patch.$ARCH
         python-pip.noarch
         screen.$ARCH
@@ -94,25 +106,17 @@ system_pkgs=( aircrack-ng.$ARCH
         sysstat.$ARCH
         wireshark.$ARCH
         )
-# ncui requires these.  it's 32bit :-(
-system_pkgs_i686=( glibc.i686 zlib.i686 )
 
-gui_pkgs=( ctan-cm-lgc-roman-fonts.noarch
-        ctan-cm-lgc-sans-fonts.noarch
-        ctan-cm-lgc-typewriter-fonts.noarch
-        dconf-editor.$ARCH
-        flash-plugin.${ARCH/i686/i386}
-        fonts-tweak-tool.noarch
-        fontconfig-infinality.noarch
-        freetype-infinality.$ARCH
-        gecko-mediaplayer.$ARCH
+# Fedora only
+#        gnome-shell-extension-auto-move-windows.noarch
+#        gnome-shell-extension-pidgin.$ARCH
+#        gnome-shell-extension-alternate-tab.noarch
+#        gnome-shell-extension-remove-accessibility-icon.noarch
+#        gnome-tweak-tool.noarch
+#        itcl.$ARCH
+
+gui_pkgs=( dconf-editor.$ARCH
         google-droid-sans-fonts.noarch
-        gnome-shell-extension-auto-move-windows.noarch
-        gnome-shell-extension-pidgin.$ARCH
-        gnome-shell-extension-alternate-tab.noarch
-        gnome-shell-extension-remove-accessibility-icon.noarch
-        gnome-tweak-tool.noarch
-        itcl.$ARCH
         libreoffice-core.$ARCH
         libreoffice-calc.$ARCH
         libreoffice-writer.$ARCH
@@ -122,51 +126,54 @@ gui_pkgs=( ctan-cm-lgc-roman-fonts.noarch
         xchat.$ARCH
         )
 
-amanda_pkgs=( gcc.$ARCH
-        automake.noarch
-        autoconf.noarch
-        flex.$ARCH
-        glib2-devel.$ARCH
-        libcurl-devel.$ARCH
-        libtool.$ARCH
-        readline-devel.$ARCH
-        )
+#amanda_pkgs=( gcc.$ARCH
+#        automake.noarch
+#        autoconf.noarch
+#        flex.$ARCH
+#        glib2-devel.$ARCH
+#        libcurl-devel.$ARCH
+#        libtool.$ARCH
+#        readline-devel.$ARCH
+#        )
+
+echo "$system_pkgs
+$gui_pkgs" > pkgs_to_install.list
 
 echo "Find missing packages..."
 # Set operations in bash!
 # Add arch suffix to make sure 32bit packages match.
 # http://www.catonmat.net/blog/set-operations-in-unix-shell/
-missing=( $(comm -23 \
-    <( printf "%s\n" ${system_pkgs[@]} ${system_pkgs_i686[@]} ${gui_pkgs[@]} ${amanda_pkgs[@]} | sort ) \
-    <( rpm -qa --queryformat "%{NAME}.%{ARCH}\n" | sort )\
-) )
+#missing=( $(comm -23 \
+#    <( printf "%s\n" ${system_pkgs[@]} ${system_pkgs_i686[@]} ${gui_pkgs[@]} ${amanda_pkgs[@]} | sort ) \
+#    <( rpm -qa --queryformat "%{NAME}.%{ARCH}\n" | sort )\
+#) )
 
-if [ "${#missing[@]}" -gt 0 ]; then
-    echo "Installing missing packages: ${missing[@]}"
-    # Now we have to strip that pesky suffix again.
-    ${yum} install "${missing[@]%.$ARCH}" || \
-    go_or_die "Missing package installation failed. Missing = ${missing[@]}"
-fi
+#if [ "${#missing[@]}" -gt 0 ]; then
+#    echo "Installing missing packages: ${missing[@]}"
+#    # Now we have to strip that pesky suffix again.
+#    ${yum} install "${missing[@]%.$ARCH}" || \
+#    go_or_die "Missing package installation failed. Missing = ${missing[@]}"
+#fi
 
 # Two extra font packages: microsoft and apple
 echo 'Check for M$ft fonts...'
 ms_fonts=webcore-fonts-vista
-rpm -qa $ms_fonts > /dev/null || \
-    ${yum} install "http://avi.alkalay.net/software/webcore-fonts/$ms_fonts-3.0-1.noarch.rpm"
+#rpm -qa $ms_fonts > /dev/null || \
+#    ${yum} install "http://avi.alkalay.net/software/webcore-fonts/$ms_fonts-3.0-1.noarch.rpm"
 
-echo "Check for Apple fonts..."
-if [ /tmp/macfonts.tar.gz ]; then
-    # Untar, update cache, be happy.
-    [ ! -d /usr/share/fonts/macfonts ] && \
-        tar -C /usr/share/fonts -zxf /tmp/macfonts.tar.gz && \
-        fc-cache -v -s
-else
-    echo "Check around these urls for macfonts.tar.gz:
-    http://www.webupd8.org/2010/06/how-to-install-apple-mac-osx-fonts-in.html
-    And the shady mirrors:
-    http://www.multiupload.nl/ZQ5V42473G
-    http://freestorage.ro/2tvmlx1ydcr0/macfonts.tar.gz.html"
-fi
+#echo "Check for Apple fonts..."
+#if [ /tmp/macfonts.tar.gz ]; then
+#    # Untar, update cache, be happy.
+#    [ ! -d /usr/share/fonts/macfonts ] && \
+#        tar -C /usr/share/fonts -zxf /tmp/macfonts.tar.gz && \
+#        fc-cache -v -s
+#else
+#    echo "Check around these urls for macfonts.tar.gz:
+#    http://www.webupd8.org/2010/06/how-to-install-apple-mac-osx-fonts-in.html
+#    And the shady mirrors:
+#    http://www.multiupload.nl/ZQ5V42473G
+#    http://freestorage.ro/2tvmlx1ydcr0/macfonts.tar.gz.html"
+#fi
 
 # Packages I don't need or want.
 remove=( b43-fwcutter
@@ -205,38 +212,41 @@ remove_fonts=( cjkuni-uming-fonts
             wqy-*
 )
 
-# Just query rpm 'cause these arrays have globs to be expanded.
-bloat=( $(rpm -qa --qf "%{NAME}\n" "${remove[@]}" "${remove_fonts[@]}" | grep -v "not installed") )
-if [ "${#bloat[@]}" -gt 0 ]; then
-    echo "Erasing bloat: ${bloat[@]}"
-    ${yum} erase "${bloat[@]}" || \
-    go_or_die "Error erasing bloat: ${bloat[@]}"
-fi
-
-if [ "$usage_type" == "lap" ] && ! rpm -qi laptop-mode-tools &>/dev/null ; then
-    echo "Installing laptop-mode-tools..."
-    # Download, build and install laptop-mode-tools.  Maybe check for a new one?
-    mkdir rpmbuild
-    l_m_t=laptop-mode-tools
-    v=1.62
-    [ -f ./$l_m_t ] || wget "http://samwel.tk/laptop_mode/tools/downloads/${l_m_t}_${v}.tar.gz"
-    # Make sure not to build on flash-drive!
-    rpmbuild -tb ${l_m_t}_${v}.tar.gz --define "_topdir $PWD/rpmbuild" && \
-        ${yum} install $PWD/rpmbuild/RPMS/noarch/${l_m_t}-${v}*.rpm || \
-        go_or_die "laptop-mode-tools didn't seem to build."
-    systemctl enable laptop-mode.service
-    # Defaults are better than nothing
-    systemctl start laptop-mode.service
-    echo "If this is a clean install of laptop-mode-tools, adjust the configs:
-        /etc/laptop-mode/laptop-mode.conf
-        /etc/laptop-mode/conf.d/bluetooth.conf
-        /etc/laptop-mode/conf.d/lcd-brightness.conf
-        /etc/laptop-mode/conf.d/video-out.conf
-    and any other that look interesting."
-fi
+echo "$remove
+$remove_fonts" > pkgs_to_remove.list
+## Just query rpm 'cause these arrays have globs to be expanded.
+#bloat=( $(rpm -qa --qf "%{NAME}\n" "${remove[@]}" "${remove_fonts[@]}" | grep -v "not installed") )
+#if [ "${#bloat[@]}" -gt 0 ]; then
+#    echo "Erasing bloat: ${bloat[@]}"
+#    ${yum} erase "${bloat[@]}" || \
+#    go_or_die "Error erasing bloat: ${bloat[@]}"
+#fi
+#
+#if [ "$usage_type" == "lap" ] && ! rpm -qi laptop-mode-tools &>/dev/null ; then
+#    echo "Installing laptop-mode-tools..."
+#    # Download, build and install laptop-mode-tools.  Maybe check for a new one?
+#    mkdir rpmbuild
+#    l_m_t=laptop-mode-tools
+#    v=1.62
+#    [ -f ./$l_m_t ] || wget "http://samwel.tk/laptop_mode/tools/downloads/${l_m_t}_${v}.tar.gz"
+#    # Make sure not to build on flash-drive!
+#    rpmbuild -tb ${l_m_t}_${v}.tar.gz --define "_topdir $PWD/rpmbuild" && \
+#        ${yum} install $PWD/rpmbuild/RPMS/noarch/${l_m_t}-${v}*.rpm || \
+#        go_or_die "laptop-mode-tools didn't seem to build."
+#    systemctl enable laptop-mode.service
+#    # Defaults are better than nothing
+#    systemctl start laptop-mode.service
+#    echo "If this is a clean install of laptop-mode-tools, adjust the configs:
+#        /etc/laptop-mode/laptop-mode.conf
+#        /etc/laptop-mode/conf.d/bluetooth.conf
+#        /etc/laptop-mode/conf.d/lcd-brightness.conf
+#        /etc/laptop-mode/conf.d/video-out.conf
+#    and any other that look interesting."
+#fi
 
 # Modify the default theme (dangerous?  sure!  nicer too.)
 # Thanks to: http://simko.web.cern.ch/simko/gnome.html
+# Still works Gnome Shell 3.10
 echo "Slimming title bar and remove for maximized windows..."
 t_dir=/usr/share/themes/Adwaita/metacity-1
 cp $t_dir/metacity-theme-3.xml $t_dir/backup_metacity-theme-3.xml
@@ -244,40 +254,6 @@ sed -i '/title_vertical_pad/s|value="[0-9]\{1,2\}"|value="1"|g' \
        $t_dir/metacity-theme-3.xml
 sed -i -r '/has_title="false"/! { s|(<frame_geometry name="max")|\1 has_title="false"| }' \
        $t_dir/metacity-theme-3.xml
-
-## Zmanda's vpn
-# Network Connect client from Juniper.
-echo "Checking for Network Connect client..."
-ncui="ncui-7.2R4.i386.rpm"
-if [ ! -d /usr/local/nc ]; then
-    # requires glibc.i686 and zlib.i686, should be installed above.
-    wget -c -O $setup/$ncui "http://www.tcnj.edu/~nts/downloads/NetworkConnect/$ncui" && \
-    rpm -i "$setup/$ncui" || \
-    go_or_die "NetworkConnect client didn't install."
-    cp $repo/scripts/getx509certificate.sh /usr/local/nc/
-    # add some lines to sudoers
-    cat $repo/etc/sudoers-zmanda-vpn
-    read -p "Does this look right? (ctrl-c to quit, Enter to continue)"
-    cp -f $repo/etc/sudoers-zmanda-vpn /etc/sudoers.d/
-    chmod 0440 /etc/sudoers.d/sudoers-zmanda-vpn
-    visudo -c
-fi
-
-# pybugz 0.9.0 # how to search for this?  need a particular version
-#    (or update patch_submit.sh)
-pybugz=pybugz-0.9.0_rc1
-python -c "import bugz" || { \
-    [ -f ${pybugz}.tar.gz ] || wget "http://pybugz.googlecode.com/files/${pybugz}.tar.gz"
-    tar -zxf ${pybugz}.tar.gz
-    cd $pybugz || go_or_die "Couldn't enter pybugz dir!"
-    python setup.py install || go_or_die "pybugz install failed."
-    cd $setup
-}
-
-# Edit infinality-settings.sh. Yay pretty fonts!
-sed -i '/USE_STYLE=/ s/DEFAULT/INFINALITY/' /etc/profile.d/infinality-settings.sh
-/etc/fonts/infinality/infctl.sh makestyles
-/etc/fonts/infinality/infctl.sh setstyle infinality
 
 ## Install files in /etc
 # Copy synaptics tweaks
@@ -313,7 +289,6 @@ disable_svcs() {
 unused_services=( auditd.service
     avahi-daemon.service
     colord-sane.service
-    cryptsetup.target
     livesys.service
     livesys-late.service
     mcelog.service
@@ -367,6 +342,9 @@ if [ "${storage_svc_to_disable[*]}" ]; then
     read -p "ctrl-c to quit or Enter to disable"
     disable_svcs "${storage_svc_to_disable[@]}"
 fi
+
+# Do the upstart fixes:
+
 
 # TODO:
 

@@ -22,8 +22,8 @@ repo=${SCRIPTPATH%/scripts*}
     if [ ! -d ~/.vim/.git ]; then
         git clone git@github.com:dwlocks/dotvim.git ~/.vim
         git submodule update --init
-        ln -s .vim/vimrc .vimrc
-        ln -s .vim/gvimrc .gvimrc
+        ln -s ~/.vim/vimrc ~/.vimrc
+        ln -s ~/.vim/gvimrc ~/.gvimrc
     else
         git pull origin
     fi
@@ -44,14 +44,16 @@ ln -f -s ~/bin/gorilla/sources/gorilla.tcl ~/bin/gorilla-1.5.3.7
 
 # Startup items to remove from gnome-session (gnome-session-properties):
 startup_items=( at-spi-dbus-bus.desktop
-caribou-autostart.desktop
 gnome-sound-applet.desktop
 imsettings-start.desktop
-libcanberra-login-sound.desktop
 nautilus-autostart.desktop
-spice-vdagent.desktop
+orca-autostart.desktop
 user-dirs-update-gtk.desktop
 )
+
+#caribou-autostart.desktop
+#libcanberra-login-sound.desktop
+#spice-vdagent.desktop
 
 a_s_dir=~/.config/autostart
 # Create a local autostart dir
@@ -71,6 +73,7 @@ for item in ${startup_items[@]}; do
                 /^$/ a\
                 X-GNOME-Autostart-enabled=false
             }
+            s/NoDisplay=true/NoDisplay=false/
         ' < /etc/xdg/autostart/$item > $a_s_dir/$item
 done
 
@@ -85,7 +88,6 @@ gsettings set org.gnome.shell.extensions.auto-move-windows application-list \
 #    pidgin-integration, alternate-tab
 ext_uuids="alternate-tab@gnome-shell-extensions.gcampax.github.com
 auto-move-windows@gnome-shell-extensions.gcampax.github.com
-remove-accessibility-icon@martin-weusten.de
 permanent-notifications@bonzini.org
 pidgin-conversation-integration@kagesenshi.org"
 for ext in $ext_uuids; do

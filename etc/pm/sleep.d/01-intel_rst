@@ -1,0 +1,4 @@
+#!/bin/sh
+
+# Tell Intel Rapid Start Technology to hibernate after 4hrs
+echo 240 > /sys/module/intel_rst/drivers/acpi\:intel_rapid_start/INT3392\:00/wakeup_time

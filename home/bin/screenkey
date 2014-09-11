@@ -6,11 +6,16 @@
 # remain valid, allowing existing shells to continue to function.
 setup_fixed_socket() {
   local old_socket="$SSH_AUTH_SOCK"
-  # Systems that use /run for session sockets can't hardlink across devices
-  # to tmp.
-  [ -d /run ] && \
-    local socket_dir="/run/user/${USER}/$(uname -n)-$(id -u)" || \
-    local socket_dir="/tmp/${USER}/$(uname -n)-$(id -u)"
+  # Systems can't hardlink across devices to tmp, so if /run is used
+  # we must create a directory in /run.  The user's dir will either be
+  # username or uid.
+  if [ -d /run ]; then
+    [ -d /run/$USER ] && \
+      local socket_dir="/run/user/${USER}/$(uname -n)-$UID" || \
+      local socket_dir="/run/user/${UID}/$(uname -n)-$UID"
+  else
+      local socket_dir="/tmp/${UID}/$(uname -n)-$UID"
+  fi
   local socket_file=$socket_dir/agent
 
   # If we already ran, don't try to setup again. (We were probably called

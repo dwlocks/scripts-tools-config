@@ -22,6 +22,10 @@ esac
 
 # Set the prompt
 export PS1='\[\e[01;32m\]\h:\[\e[01;34m\]\w\n\A \$ \[\e[0000m\]'
+# Special case for local
+if [ $HOSTNAME = 'dlocksJPZMYY1' ]; then
+    export PS1='\[\e[38;5;79m\]\h:\[\e[01;34m\]\w\n\A \$ \[\e[0000m\]'
+fi
 export PS2='---> '
 export EDITOR=vim
 export VISUAL=vim

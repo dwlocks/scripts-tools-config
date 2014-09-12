@@ -41,8 +41,11 @@ export LESS='-RXF'
 alias pip='pip-python'
 
 if [ "$OSTYPE" = "cygwin" ]; then
-# ssh-pageant
-eval $(/usr/local/bin/ssh-pageant -ra /tmp/.ssh-pageant)
+    # ssh-pageant
+    eval $(/usr/local/bin/ssh-pageant -ra /tmp/.ssh-pageant)
+    # Windows sets an incorrect-for-cygwin var.
+    unset PYTHONHOME
+    unalias pip
 fi
 
 # local only set: filter all the cmd completion stuff. still

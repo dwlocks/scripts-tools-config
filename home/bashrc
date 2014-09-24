@@ -34,8 +34,10 @@ export PYTHONSTARTUP=~/scripts-tools-config/home/pythonStartup
 export GREP_OPTIONS='--color'
 # Leave colors, don't clear screen, exit if fits on screen
 export LESS='-RXF'
-[ -f /usr/bin/source-highlight ] && \
-    export LESSOPEN='||/usr/bin/source-highlight --failsafe -fesc -oSTDOUT --style-file=/usr/share/source-highlight/esc.style -i %s'
+less_open='/usr/bin/source-highlight --failsafe -fesc -oSTDOUT --style-file=/usr/share/source-highlight/esc.style -i %s'
+[ -f /usr/bin/source-highlight ] && export LESSOPEN="||$less_open"
+# Cygwin doesn't know double pipe syntax.
+[ "$WINDIR" = "C:\\Windows" ] && export LESSOPEN="|$less_open"
 
 # Aliases go here.
 alias pip='pip-python'

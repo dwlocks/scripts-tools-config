@@ -9,13 +9,7 @@ case $PATH in
         ;;
 esac
 
-# Holy cow, colors!
-case $COLORTERM in
-    gnome-terminal) export TERM=vte-256color;;
-esac
-
 case $TERM in
-    screen) export TERM=screen-256color ;;
     # Putty terminfo does not refresh correctly with vim
     putty*) export TERM=xterm-256color ;;
 esac
@@ -75,7 +69,7 @@ lah() { ls -lah $@; }
 
 svim() { screenkey -t "$1" vim "$1"; }
 
-go() {
+sc() {
     # start screen attaching to existing ssh-keyring agent.
     ~/bin/screenkey
 }

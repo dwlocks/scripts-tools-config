@@ -12,6 +12,7 @@ purge=
 pager=
 fetch=
 shelve=
+mq=
 
 [pager]
 pager=LESS='FRXd' /usr/bin/less

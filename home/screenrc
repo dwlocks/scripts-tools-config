@@ -1,7 +1,7 @@
 caption always
 caption string "%{wk}window: %-w %n %{gk}%t %{wk}%+w%= at %C "
-term xterm-256color
-vbell_msg "<ding!>"
+term screen-256color-s
+#vbell_msg "<ding!>"
 defscrollback 1024
 escape ^Xx
 shelltitle 'bash'

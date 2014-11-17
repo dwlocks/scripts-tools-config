@@ -44,5 +44,5 @@ export SSH_AUTH_SOCK=$(setup_fixed_socket)
 # finally, fire up screen.  Check if we're already in a session, else try
 # reattaching to a running session; otherwise start up a new one
 [ "$STY" ] && \
-    screen "${@}" || \
-    screen -D -R "${@}"
+    exec screen "${@}" || \
+    exec screen -D -R "${@}"

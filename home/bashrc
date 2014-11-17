@@ -9,13 +9,7 @@ case $PATH in
         ;;
 esac
 
-# Holy cow, colors!
-case $COLORTERM in
-    gnome-terminal) export TERM=vte-256color;;
-esac
-
 case $TERM in
-    screen) export TERM=screen-256color ;;
     # Putty terminfo does not refresh correctly with vim
     putty*) export TERM=xterm-256color ;;
 esac
@@ -34,8 +28,10 @@ export PYTHONSTARTUP=~/scripts-tools-config/home/pythonStartup
 export GREP_OPTIONS='--color'
 # Leave colors, don't clear screen, exit if fits on screen
 export LESS='-RXF'
-[ -f /usr/bin/source-highlight ] && \
-    export LESSOPEN='||/usr/bin/source-highlight --failsafe -fesc -oSTDOUT --style-file=/usr/share/source-highlight/esc.style -i %s'
+less_open='/usr/bin/source-highlight --failsafe -fesc -oSTDOUT --style-file=/usr/share/source-highlight/esc.style -i %s'
+[ -f /usr/bin/source-highlight ] && export LESSOPEN="||$less_open"
+# Cygwin doesn't know double pipe syntax.
+[ "$WINDIR" = "C:\\Windows" ] && export LESSOPEN="|$less_open"
 
 # Aliases go here.
 alias pip='pip-python'
@@ -73,7 +69,7 @@ lah() { ls -lah $@; }
 
 svim() { screenkey -t "$1" vim "$1"; }
 
-go() {
+sc() {
     # start screen attaching to existing ssh-keyring agent.
     ~/bin/screenkey
 }

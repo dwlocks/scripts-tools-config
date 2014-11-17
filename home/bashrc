@@ -56,6 +56,8 @@ lset() {
 
 rgrep() {
     find . -name '.git' -prune -o \
+           -name '.hg'  -prune -o \
+           -name '.svn' -prune -o \
            -name '*.pyc' -prune -o \
            -name '*.swp' -prune -o \
            -type f -print0 | xargs -0 grep --color=always $@

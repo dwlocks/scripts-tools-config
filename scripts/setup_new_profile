@@ -86,10 +86,7 @@ gsettings set org.gnome.shell.extensions.auto-move-windows application-list \
 
 # Enable extensions: auto-move-windows remove-accessibility-icon,
 #    pidgin-integration, alternate-tab
-ext_uuids="alternate-tab@gnome-shell-extensions.gcampax.github.com
-auto-move-windows@gnome-shell-extensions.gcampax.github.com
-permanent-notifications@bonzini.org
-pidgin-conversation-integration@kagesenshi.org"
+ext_uuids="permanent-notifications@bonzini.org"
 for ext in $ext_uuids; do
     # This tool complains loudly if the extensions are already enabled.
     gnome-shell-extension-tool -e "$ext" 2>/dev/null
@@ -106,12 +103,24 @@ mkdir -p ~/.local/share/applications
 # Link all files in $repo/home to their appropriate hidden locations.
 # This is the heavy lifting.
 cd $repo/home
-for f in $(find . -type f); do
+
+safe_link() {
+    # First param is a file to be linked into home dir
     # If it's a file, back that shit up.
     # If it's a link already, leave it alone.
-    f=${f#./}
+    f=${1#./}
     echo "Linking $f"
-    [ -h ~/.$f ] || ln -b -s $repo/home/$f ~/.$f
+    case $f in
+        bin*) target=~/$f ;;
+        *) target=~/.$f ;;
+    esac
+    sub_dir=$(dirname $target)
+    [ -d $sub_dir ] || mkdir -p $sub_dir
+    [ -h $target ] || ln -b -s $repo/home/$f $target
+}
+
+for f in $(find . -type f); do
+    safe_link $f
 done
 
 ###

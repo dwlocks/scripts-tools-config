@@ -9,6 +9,10 @@ case $PATH in
         ;;
 esac
 
+# If commander tools are there, add them to the path
+[ -d /opt/electriccloud/commander/bin ] && \
+    PATH=$PATH:/opt/electriccloud/commander/bin
+
 case $TERM in
     # Putty terminfo does not refresh correctly with vim
     putty*) export TERM=xterm-256color ;;

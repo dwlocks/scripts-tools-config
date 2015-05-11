@@ -4,6 +4,13 @@ Host github.com
     ForwardX11 no
     ForwardX11Trusted no
     User git
+    IdentityFile ~/.ssh/dlocksJP_rsa
+
+Host source-americas.it.here.com
+    ForwardAgent no
+    ForwardX11 no
+    User snc
+    IdentityFile ~/.ssh/locks_snc
 
 Host *
     ForwardAgent yes

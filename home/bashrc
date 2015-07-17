@@ -2,21 +2,6 @@
 # Source global definitions
 [ -f /etc/bashrc ] && . /etc/bashrc
 
-case $PATH in
-    *$HOME/bin*) : ;;
-    *) PATH="$HOME/bin:$PATH:.:/sbin:/usr/sbin"
-        export PATH
-        ;;
-esac
-
-# If commander tools are there, add them to the path
-[ -d /opt/electriccloud/commander/bin ] && \
-    PATH=$PATH:/opt/electriccloud/commander/bin
-
-case $TERM in
-    # Putty terminfo does not refresh correctly with vim
-    putty*) export TERM=xterm-256color ;;
-esac
 
 # Set the prompt
 export PS1='\[\e[01;32m\]\h:\[\e[01;34m\]\w\n\A \$ \[\e[0000m\]'
@@ -24,21 +9,13 @@ export PS1='\[\e[01;32m\]\h:\[\e[01;34m\]\w\n\A \$ \[\e[0000m\]'
 if [ $HOSTNAME = 'dlocksJPZMYY1' ]; then
     export PS1='\[\e[38;5;79m\]\h:\[\e[01;34m\]\w\n\A \$ \[\e[0000m\]'
 fi
-export PS2='---> '
-export EDITOR=vim
-export VISUAL=vim
-eval $(dircolors ~/.dir_colors)
-export PYTHONSTARTUP=~/scripts-tools-config/home/pythonStartup
-export GREP_OPTIONS='--color'
-# Leave colors, don't clear screen, exit if fits on screen
-export LESS='-RXF'
+
 less_open='/usr/bin/source-highlight --failsafe -fesc -oSTDOUT --style-file=/usr/share/source-highlight/esc.style -i %s'
 [ -f /usr/bin/source-highlight ] && export LESSOPEN="||$less_open"
-# Cygwin doesn't know double pipe syntax.
-[ "$WINDIR" = "C:\\Windows" ] && export LESSOPEN="|$less_open"
 
 # Aliases go here.
-alias pip='pip-python'
+alias grep='grep --color=always'
+alias dc='/usr/local/bin/docker-compose'
 
 if [ "$OSTYPE" = "cygwin" ]; then
     # ssh-pageant
@@ -47,6 +24,11 @@ if [ "$OSTYPE" = "cygwin" ]; then
     unset PYTHONHOME
     unalias pip
 fi
+
+d2u() {
+    # The blank char before $ is a literal ^M
+    sed $@ -i 's/$//'
+}
 
 # local only set: filter all the cmd completion stuff. still
 # needs to be piped to less :-(

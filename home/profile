@@ -1,0 +1,42 @@
+# ~/.profile: executed by the command interpreter for login shells.
+# This file is not read by bash(1), if ~/.bash_profile or ~/.bash_login
+# exists.
+# see /usr/share/doc/bash/examples/startup-files for examples.
+# the files are located in the bash-doc package.
+
+# the default umask is set in /etc/profile; for setting the umask
+# for ssh logins, install and configure the libpam-umask package.
+#umask 022
+
+
+# set PATH so it includes user's private bin if it exists
+if [ -d "$HOME/bin" ] ; then
+    case $PATH in
+        *$HOME/bin*) : ;;
+        *) PATH="$HOME/bin:$PATH:.:/sbin:/usr/sbin"
+            export PATH
+            ;;
+    esac
+fi
+
+# If commander tools are there, add them to the path
+[ -d /opt/electriccloud/commander/bin ] && \
+    PATH=$PATH:/opt/electriccloud/commander/bin
+
+# All non-bash specific env vars
+export EDITOR=vim
+export VISUAL=vim
+export PS2='---> '
+eval $(dircolors ~/.dir_colors)
+export PYTHONSTARTUP=~/scripts-tools-config/home/pythonStartup
+# Leave colors, don't clear screen, exit if fits on screen
+export LESS='-RXF'
+
+export QSI_HARNESS_HOME=/opt/qcharness
+# Redundancy sucks
+export MY_HARNESS_HOME=/opt/qcharness
+# extract active java_home from update-alternatives.
+export JAVA_HOME=$( update-alternatives --query java|sed -n 's|Value: \(.*\)/jre/bin/java|\1|p' )
+
+# LAST Thing....
+. ~/.bashrc

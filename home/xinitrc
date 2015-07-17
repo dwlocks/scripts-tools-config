@@ -1,0 +1,2 @@
+#!/bin/sh
+/usr/bin/xrdb --merge ~/.Xresources

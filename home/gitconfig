@@ -1,8 +1,12 @@
 [user]
-	email = danlocks@gmail.com
 	name = Dan Locks
+        email = daniel.locks@here.com
+[gerrit.it.here.com]
+        user = dlocks
+        email = daniel.locks@here.com
 [github]
 	user = dwlocks
+	email = danlocks@gmail.com
 [core]
 	editor = vim
 [color]

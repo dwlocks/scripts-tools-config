@@ -9,12 +9,20 @@ Host github.com
 Host source-americas.it.here.com
     ForwardAgent no
     ForwardX11 no
+    PubKeyAuthentication yes
     User snc
     IdentityFile ~/.ssh/locks_snc
+
+Host gerrit.it.here.com
+    ForwardAgent no
+    ForwardX11 no
 
 Host *
     ForwardAgent yes
     ForwardX11 yes
     PubKeyAuthentication yes
     StrictHostKeyChecking no
+    GSSAPIAuthentication yes
+    GSSAPIDelegateCredentials yes
+    GSSAPIKeyExchange yes
 

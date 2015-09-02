@@ -1,22 +1,23 @@
 # Commented lines are ubuntu's defaults.
 synclient \
-    LeftEdge=130 \
-    RightEdge=3130 \
-    TopEdge=123 \
-    BottomEdge=2159 \
+    AccelFactor=.6 \
     VertEdgeScroll=0 \
     HorizTwoFingerScroll=1 \
-    LockedDrags=0 \
-    LockedDragTimeout=5000 \
+    LockedDrags=1 \
+    LockedDragTimeout=250 \
     TapButton3=2 \
     PalmDetect=1 \
     PalmMinWidth=3 \
     PalmMinZ=40 \
     TapAndDragGesture=1 \
-    AreaLeftEdge=75 \
-    AreaRightEdge=3150 \
-    AreaTopEdge=100 \
     ClickPad=1
+#    AreaLeftEdge=75 \
+#    AreaRightEdge=3150 \
+#    AreaTopEdge=100 \
+#    LeftEdge=130 \
+#    RightEdge=3130 \
+#    TopEdge=123 \
+#    BottomEdge=2159 \
  #   FingerLow=1 \
  #   FingerHigh=1 \
  #   MaxTapTime=180 \

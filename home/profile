@@ -13,7 +13,7 @@
 if [ -d "$HOME/bin" ] ; then
     case $PATH in
         *$HOME/bin*) : ;;
-        *) PATH="$HOME/bin:$PATH:.:/sbin:/usr/sbin"
+        *) PATH="$HOME/bin:$PATH:."
             export PATH
             ;;
     esac

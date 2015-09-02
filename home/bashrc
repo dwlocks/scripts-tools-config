@@ -27,7 +27,7 @@ fi
 
 d2u() {
     # The blank char before $ is a literal ^M
-    sed $@ -i 's/$//'
+    sed -i 's/$//' $@
 }
 
 # local only set: filter all the cmd completion stuff. still

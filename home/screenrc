@@ -1,5 +1,5 @@
 caption always
-caption string "%{wk}window: %-w %n %{gk}%t %{wk}%+w%= at %C "
+caption string "%{bk}window: %-w %{rk}%n %t %{bk}%+w%= at %C "
 term screen-256color-s
 #vbell_msg "<ding!>"
 defscrollback 1024

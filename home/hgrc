@@ -13,6 +13,7 @@ pager=
 fetch=
 shelve=
 mq=
+keyword=
 
 [pager]
 pager=LESS='FRXd' /usr/bin/less

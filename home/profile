@@ -27,7 +27,6 @@ fi
 export EDITOR=vim
 export VISUAL=vim
 export PS2='---> '
-eval $(dircolors ~/.dir_colors)
 export PYTHONSTARTUP=~/scripts-tools-config/home/pythonStartup
 # Leave colors, don't clear screen, exit if fits on screen
 export LESS='-RXF'

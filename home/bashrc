@@ -9,6 +9,7 @@ export PS1='\[\e[01;32m\]\h:\[\e[01;34m\]\w\n\A \$ \[\e[0000m\]'
 if [ $HOSTNAME = 'dlocksJPZMYY1' ]; then
     export PS1='\[\e[38;5;79m\]\h:\[\e[01;34m\]\w\n\A \$ \[\e[0000m\]'
 fi
+eval $(dircolors ~/.dir_colors)
 
 less_open='/usr/bin/source-highlight --failsafe -fesc -oSTDOUT --style-file=/usr/share/source-highlight/esc.style -i %s'
 [ -f /usr/bin/source-highlight ] && export LESSOPEN="||$less_open"

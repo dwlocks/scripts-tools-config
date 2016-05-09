@@ -9,6 +9,7 @@
 	email = danlocks@gmail.com
 [core]
 	editor = vim
+	autocrlf = input
 [color]
 	ui = true
         diff = true

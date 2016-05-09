@@ -2,12 +2,14 @@
 # Source global definitions
 [ -f /etc/bashrc ] && . /etc/bashrc
 
+# helpful git prompt
+. ~/bin/git-prompt.sh
 
 # Set the prompt
 export PS1='\[\e[01;32m\]\h:\[\e[01;34m\]\w\n\A \$ \[\e[0000m\]'
 # Special case for local
 if [ $HOSTNAME = 'dlocksJPZMYY1' ]; then
-    export PS1='\[\e[38;5;79m\]\h:\[\e[01;34m\]\w\n\A \$ \[\e[0000m\]'
+    export PS1='\[\e[38;5;79m\]\h:\[\e[01;34m\]\w $(__git_ps1 "(\[\e[3;0;33m\]%s\[\e[0000m\])")\n\A \$ \[\e[0000m\]'
 fi
 eval $(dircolors ~/.dir_colors)
 
